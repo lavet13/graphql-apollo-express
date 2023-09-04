@@ -24,6 +24,29 @@ export type Message = {
   user: User;
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  createMessage: Message;
+  deleteMessage: Scalars['Boolean']['output'];
+  updateMessage?: Maybe<Message>;
+};
+
+
+export type MutationCreateMessageArgs = {
+  text: Scalars['String']['input'];
+};
+
+
+export type MutationDeleteMessageArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateMessageArgs = {
+  id: Scalars['ID']['input'];
+  text: Scalars['String']['input'];
+};
+
 export type Query = {
   __typename?: 'Query';
   me?: Maybe<User>;
@@ -125,6 +148,7 @@ export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Message: ResolverTypeWrapper<Message>;
+  Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   User: ResolverTypeWrapper<User>;
@@ -135,6 +159,7 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean']['output'];
   ID: Scalars['ID']['output'];
   Message: Message;
+  Mutation: {};
   Query: {};
   String: Scalars['String']['output'];
   User: User;
@@ -145,6 +170,12 @@ export type MessageResolvers<ContextType = ContextValue, ParentType extends Reso
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MutationResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationCreateMessageArgs, 'text'>>;
+  deleteMessage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
+  updateMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'id' | 'text'>>;
 }>;
 
 export type QueryResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -164,6 +195,7 @@ export type UserResolvers<ContextType = ContextValue, ParentType extends Resolve
 
 export type Resolvers<ContextType = ContextValue> = ResolversObject<{
   Message?: MessageResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 }>;

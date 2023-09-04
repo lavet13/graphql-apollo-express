@@ -1,6 +1,6 @@
 import { Message, QueryResolvers, User } from '../__generated/types';
 
-export const users: Record<string, User> = {
+export let users: Record<string, User> = {
   1: {
     id: '1',
     username: 'Robin Wieruch',
@@ -13,7 +13,7 @@ export const users: Record<string, User> = {
   },
 };
 
-export const messages: Record<string, Message> = {
+export let messages: Record<string, Message> = {
   1: {
     id: '1',
     text: 'Hello World',
@@ -24,6 +24,10 @@ export const messages: Record<string, Message> = {
     text: 'Bye World',
     userId: '2',
   },
+};
+
+export const setMessages = (newMessages: { [x: string]: Message }) => {
+  messages = newMessages;
 };
 
 const queries: QueryResolvers = {

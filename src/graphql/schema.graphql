@@ -1,10 +1,16 @@
 type Query {
-  me: User
-  user(id: ID!): User
   users: [User!]
+  user(id: ID!): User
+  me: User
 
   messages: [Message!]!
   message(id: ID!): Message!
+}
+
+type Mutation {
+  createMessage(text: String!): Message!
+  deleteMessage(id: ID!): Boolean!
+  updateMessage(id: ID!, text: String!): Message
 }
 
 type User {
