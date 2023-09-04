@@ -1,16 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
+import { json } from 'body-parser';
 import http from 'http';
+
 import { ApolloServer } from '@apollo/server';
-import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
 import { readFileSync } from 'fs';
 import resolvers from './graphql/resolvers';
+import { users } from './graphql/resolvers/queries';
+import { User } from './graphql/__generated/types';
 
-export interface MyContext {
-  token?: String;
+export interface ContextValue {
+  me: User;
 }
 
 const typeDefs = readFileSync('./src/graphql/schema.graphql', {
@@ -22,7 +25,7 @@ async function bootstrap() {
 
   const httpServer = http.createServer(app);
 
-  const server = new ApolloServer({
+  const server = new ApolloServer<ContextValue>({
     typeDefs,
     resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -33,9 +36,11 @@ async function bootstrap() {
   app.use(
     '/',
     cors<cors.CorsRequest>(),
-    bodyParser.json(),
-    expressMiddleware(server, {
-      context: async ({ req }) => ({ token: req.headers.token }),
+    json(),
+    expressMiddleware<ContextValue>(server, {
+      context: async _ => {
+        return { me: users[1] };
+      },
     })
   );
 

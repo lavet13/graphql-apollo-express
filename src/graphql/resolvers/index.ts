@@ -1,6 +1,13 @@
 import { Resolvers } from '../__generated/types';
 import Query from '../resolvers/queries';
 
-const resolvers: Resolvers = { Query };
+import User from './user/user.resolvers';
+import Message from './message/message.resolvers';
+
+const resolvers: Resolvers = {
+  Query,
+  User,
+  Message,
+};
 
 export default resolvers;
