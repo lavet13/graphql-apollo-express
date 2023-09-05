@@ -7,18 +7,19 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
-import { readFileSync } from 'fs';
 import resolvers from './graphql/resolvers';
-import { users } from './graphql/resolvers/queries';
+import typeDefs from './graphql/schema';
+import models, { Models } from './graphql/models';
+
 import { User } from './graphql/__generated/types';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 
 export interface ContextValue {
   me: User;
+  models: Models;
 }
 
-const typeDefs = readFileSync('./src/graphql/schema.graphql', {
-  encoding: 'utf-8',
-});
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 async function bootstrap() {
   const app = express();
@@ -26,8 +27,7 @@ async function bootstrap() {
   const httpServer = http.createServer(app);
 
   const server = new ApolloServer<ContextValue>({
-    typeDefs,
-    resolvers,
+    schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
@@ -39,7 +39,7 @@ async function bootstrap() {
     json(),
     expressMiddleware<ContextValue>(server, {
       context: async _ => {
-        return { me: users[1] };
+        return { me: models.users[1], models };
       },
     })
   );
