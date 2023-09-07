@@ -1,31 +1,6 @@
-import gql from 'graphql-tag';
+import { mergeTypeDefs } from '@graphql-tools/merge';
 
-export default gql`
-  type Query {
-    users: [User!]
-    user(id: ID!): User
+import messageTypes from './types/message.types';
+import userTypes from './types/user.types';
 
-    me: User
-
-    messages: [Message!]!
-    message(id: ID!): Message!
-  }
-
-  type Mutation {
-    createMessage(text: String!): Message!
-    deleteMessage(id: ID!): Boolean!
-    updateMessage(id: ID!, text: String!): Message
-  }
-
-  type User {
-    id: ID!
-    username: String!
-    messages: [Message!]
-  }
-
-  type Message {
-    id: ID!
-    text: String!
-    user: User!
-  }
-`;
+export default mergeTypeDefs([messageTypes, userTypes]);

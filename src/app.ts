@@ -7,9 +7,9 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
+import models, { Models } from './graphql/models';
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
-import models, { Models } from './graphql/models';
 
 import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -19,7 +19,10 @@ export interface ContextValue {
   models: Models;
 }
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+});
 
 async function bootstrap() {
   const app = express();
