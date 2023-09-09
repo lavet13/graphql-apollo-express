@@ -1,39 +1,34 @@
-import { Message, User } from '../__generated/types';
+import { Sequelize } from 'sequelize';
+import UserModel, { User } from './user.models';
+import MessageModel, { Message } from './message.models';
 
-let users: Record<string, User> = {
-  1: {
-    id: '1',
-    username: 'Robin Wieruch',
-    messageIds: ['1'],
-  },
-  2: {
-    id: '2',
-    username: 'Dave Davids',
-    messageIds: ['1', '2'],
-  },
-};
-
-let messages: Record<string, Message> = {
-  1: {
-    id: '1',
-    text: 'Hello World',
-    userId: '1',
-  },
-  2: {
-    id: '2',
-    text: 'Bye World',
-    userId: '2',
-  },
-};
+const sequelize = new Sequelize(
+  import.meta.env.VITE_DATABASE,
+  import.meta.env.VITE_DATABASE_USER,
+  import.meta.env.VITE_DATABASE_PASSWORD,
+  {
+    dialect: 'postgres',
+  }
+);
 
 export type Models = {
-  users: typeof users;
-  messages: typeof messages;
+  User: User;
+  Message: Message;
 };
 
-const models: Models = {
-  users,
-  messages,
+const models = {
+  User: UserModel(sequelize),
+  Message: MessageModel(sequelize),
 };
+
+(Object.keys(models) as (keyof typeof models)[]).forEach(key => {
+  const model = models[key];
+
+  if (model.associate !== undefined) {
+    model.associate(models);
+  }
+});
+
+export { sequelize };
 
 export default models;

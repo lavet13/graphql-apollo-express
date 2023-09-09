@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { json } from 'body-parser';
@@ -7,7 +8,7 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
-import models, { Models } from './graphql/models';
+import models, { Models, sequelize } from './graphql/models';
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
 
@@ -15,7 +16,7 @@ import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
 export interface ContextValue {
-  me: User;
+  // me: User;
   models: Models;
 }
 
@@ -36,13 +37,16 @@ async function bootstrap() {
 
   await server.start();
 
+  await sequelize.sync({ force: true });
+
   app.use(
     '/',
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware<ContextValue>(server, {
       context: async _ => {
-        return { me: models.users[1], models };
+        // return { me: models.users[1], models };
+        return { models };
       },
     })
   );
