@@ -3,57 +3,35 @@ import { Resolvers, Message } from '../../__generated/types';
 
 export default {
   Query: {
-    message(_, { id }, { models }) {
-      return models.messages[id];
+    async message(_, { id }, { models }) {
+      return await models.Message.findByPk(id);
     },
 
-    messages(_, __, { models }) {
-      return Object.values<Message>(models.messages);
+    async messages(_, __, { models }) {
+      return await models.Message.findAll();
     },
   },
 
   Mutation: {
-    createMessage(_, { text }, { me, models }) {
-      const id = uuidv4();
-
-      const message: Message = {
-        id,
+    async createMessage(_, { text }, { me, models }) {
+      return await models.Message.create({
         text,
         userId: me.id,
-      };
-
-      models.messages[id] = message;
-      models.users[me.id].messageIds.push(id);
-
-      return message;
+      });
     },
 
-    deleteMessage(_, { id }, { models }) {
-      const { [id]: message, ...otherMessages } = models.messages;
-
-      if (!message) {
-        return false;
-      }
-
-      models.messages = otherMessages;
-
-      return true;
+    async deleteMessage(_, { id }, { models }) {
+      return await models.Message.destroy({ where: { id } });
     },
 
-    updateMessage(_, { id, text }, { models }) {
-      const updatedMessage = models.messages[id];
-
-      if (!updatedMessage) return null;
-
-      updatedMessage.text = text;
-
-      return updatedMessage;
+    async updateMessage(_, { id, text }, { models }) {
+      return await models.Message.update({ text }, { where: { id } });
     },
   },
 
   Message: {
-    user(message, _, { models }) {
-      return models.users[message.userId];
+    async user(message, _, { models }) {
+      return await models.User.findByPk(message.userId);
     },
   },
 } as Resolvers;

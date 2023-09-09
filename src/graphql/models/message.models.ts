@@ -15,6 +15,7 @@ export interface MessageModel
     InferAttributes<MessageModel>,
     InferCreationAttributes<MessageModel>
   > {
+  id: string;
   text: string;
 }
 
@@ -24,6 +25,11 @@ export type Message = ModelStatic<MessageModel> & {
 
 export default (sequelize: Sequelize) => {
   const Message: Message = sequelize.define<MessageModel>('message', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     text: {
       type: DataTypes.TEXT,
     },

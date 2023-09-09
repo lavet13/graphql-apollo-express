@@ -2,16 +2,16 @@ import { Resolvers, User } from '../../__generated/types';
 
 export default {
   Query: {
-    me(_, __, { me }) {
-      return me;
+    async me(_, __, { models, me }) {
+      return await models.User.findByPk(me.id);
     },
 
-    user(_, { id }, { models }) {
-      return models.users[id];
+    async user(_, { id }, { models }) {
+      return await models.User.findByPk(id);
     },
 
-    users(_, __, { models }) {
-      return Object.values<User>(models.users);
+    async users(_, __, { models }) {
+      return await models.User.findAll();
     },
   },
 
@@ -21,10 +21,12 @@ export default {
     //   return user.username;
     // },
 
-    messages(user, _, { models }) {
-      return Object.values(models.messages).filter(message =>
-        user.messageIds.includes(message.id)
-      );
+    async messages(user, _, { models }) {
+      return await models.Message.findAll({
+        where: {
+          userId: user.id,
+        },
+      });
     },
   },
 } as Resolvers;

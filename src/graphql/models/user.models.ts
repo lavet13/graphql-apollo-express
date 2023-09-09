@@ -20,6 +20,7 @@ export interface UserModel
 
 export type User = ModelStatic<UserModel> & {
   associate?: (models: Models) => void;
+  findByLogin?: (login: string) => Promise<UserModel | null>;
 };
 
 export default (sequelize: Sequelize) => {
@@ -36,6 +37,20 @@ export default (sequelize: Sequelize) => {
 
   User.associate = ({ Message }: { Message: ModelStatic<MessageModel> }) => {
     User.hasMany(Message, { onDelete: 'CASCADE' });
+  };
+
+  User.findByLogin = async (login: string) => {
+    let user = await User.findOne({
+      where: { username: login },
+    });
+
+    // if (!user) {
+    //       user = await User.findOne({
+    //         where: { email: login },
+    //       });
+    //     }
+
+    return user;
   };
 
   return User;

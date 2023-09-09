@@ -16,7 +16,7 @@ import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
 export interface ContextValue {
-  // me: User;
+  me?: User | null;
   models: Models;
 }
 
@@ -37,22 +37,51 @@ async function bootstrap() {
 
   await server.start();
 
-  await sequelize.sync({ force: true });
+  const eraseDatabaseOnSync = true;
+
+  await sequelize.sync({ force: eraseDatabaseOnSync });
+
+  if (eraseDatabaseOnSync) {
+    createUsersWithMessages();
+  }
 
   app.use(
     '/',
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware<ContextValue>(server, {
-      context: async _ => {
-        // return { me: models.users[1], models };
-        return { models };
-      },
+      context: async _ => ({
+        me: await models.User.findByLogin?.('rwieruch'),
+        models,
+      }),
     })
   );
 
   return app;
 }
+
+const createUsersWithMessages = async () => {
+  await models.User.create(
+    {
+      username: 'rwieruch',
+      messages: [{ text: 'Published the Road to learn React' }],
+    },
+    { include: [models.Message] }
+  );
+
+  await models.User.create(
+    {
+      username: 'ddavids',
+      messages: [
+        {
+          text: 'Happy to release . . .',
+        },
+        { text: 'Published a complete . . .' },
+      ],
+    },
+    { include: [models.Message] }
+  );
+};
 
 const app = bootstrap();
 
