@@ -1,30 +1,15 @@
-import {
-  Sequelize,
-  DataTypes,
-  Model,
-  InferAttributes,
-  InferCreationAttributes,
-  ModelStatic,
-} from 'sequelize';
-import { MessageModel } from './message.models';
+import { Sequelize, DataTypes, ModelStatic } from 'sequelize';
+
 import { Models } from '.';
 
-export interface UserModel
-  extends Model<
-    InferAttributes<UserModel>,
-    InferCreationAttributes<UserModel>
-  > {
-  id: string;
-  username: string;
-}
-
-export type User = ModelStatic<UserModel> & {
+export type User = ModelStatic<any> & {
+  [key: string]: any;
   associate?: (models: Models) => void;
-  findByLogin?: (login: string) => Promise<UserModel | null>;
+  findByLogin?: (login: string) => Promise<any | null>;
 };
 
 export default (sequelize: Sequelize) => {
-  const User: User = sequelize.define<UserModel>('user', {
+  const User: User = sequelize.define('user', {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
@@ -35,7 +20,7 @@ export default (sequelize: Sequelize) => {
     },
   });
 
-  User.associate = ({ Message }: { Message: ModelStatic<MessageModel> }) => {
+  User.associate = ({ Message }) => {
     User.hasMany(Message, { onDelete: 'CASCADE' });
   };
 

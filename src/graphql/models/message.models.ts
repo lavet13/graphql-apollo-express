@@ -1,30 +1,14 @@
-import {
-  DataTypes,
-  InferAttributes,
-  InferCreationAttributes,
-  Model,
-  ModelStatic,
-  Sequelize,
-} from 'sequelize';
+import { DataTypes, ModelStatic, Sequelize } from 'sequelize';
 
-import { UserModel } from './user.models';
 import { Models } from '.';
 
-export interface MessageModel
-  extends Model<
-    InferAttributes<MessageModel>,
-    InferCreationAttributes<MessageModel>
-  > {
-  id: string;
-  text: string;
-}
-
-export type Message = ModelStatic<MessageModel> & {
+export type Message = ModelStatic<any> & {
+  [key: string]: any;
   associate?: (models: Models) => void;
 };
 
 export default (sequelize: Sequelize) => {
-  const Message: Message = sequelize.define<MessageModel>('message', {
+  const Message: Message = sequelize.define('message', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -35,7 +19,7 @@ export default (sequelize: Sequelize) => {
     },
   });
 
-  Message.associate = ({ User }: { User: ModelStatic<UserModel> }) => {
+  Message.associate = ({ User }) => {
     Message.belongsTo(User);
   };
 

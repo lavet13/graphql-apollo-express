@@ -27,8 +27,8 @@ export type Message = {
 export type Mutation = {
   __typename?: 'Mutation';
   createMessage: Message;
-  deleteMessage: Scalars['Boolean']['output'];
-  updateMessage?: Maybe<Message>;
+  deleteMessage: Scalars['Int']['output'];
+  updateMessage?: Maybe<Array<Scalars['Int']['output']>>;
 };
 
 
@@ -147,6 +147,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
+  Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Message: ResolverTypeWrapper<Message>;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
@@ -158,6 +159,7 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean']['output'];
   ID: Scalars['ID']['output'];
+  Int: Scalars['Int']['output'];
   Message: Message;
   Mutation: {};
   Query: {};
@@ -174,8 +176,8 @@ export type MessageResolvers<ContextType = ContextValue, ParentType extends Reso
 
 export type MutationResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationCreateMessageArgs, 'text'>>;
-  deleteMessage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
-  updateMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'id' | 'text'>>;
+  deleteMessage?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
+  updateMessage?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'id' | 'text'>>;
 }>;
 
 export type QueryResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{

@@ -1,9 +1,11 @@
-import { Resolvers, User } from '../../__generated/types';
+import { Resolvers } from '../../__generated/types';
 
 export default {
   Query: {
-    async me(_, __, { models, me }) {
-      return await models.User.findByPk(me.id);
+    async me(_, __, { me }) {
+      return me ? me : null;
+
+      // return await models.User.findByPk(me.id);
     },
 
     async user(_, { id }, { models }) {
@@ -16,11 +18,6 @@ export default {
   },
 
   User: {
-    // default resolver looks like this:
-    // username(user) {
-    //   return user.username;
-    // },
-
     async messages(user, _, { models }) {
       return await models.Message.findAll({
         where: {

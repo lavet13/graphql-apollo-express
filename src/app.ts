@@ -16,7 +16,7 @@ import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
 export interface ContextValue {
-  me?: User | null;
+  me: User | null;
   models: Models;
 }
 
