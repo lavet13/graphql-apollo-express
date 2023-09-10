@@ -8,7 +8,7 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
-import models, { Models, sequelize } from './graphql/models';
+import models, { Models, sequelize } from './db/models';
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
 
@@ -51,7 +51,7 @@ async function bootstrap() {
     json(),
     expressMiddleware<ContextValue>(server, {
       context: async _ => ({
-        me: await models.User.findByLogin?.('rwieruch'),
+        me: await models.User.findByLogin?.('ddavids'),
         models,
       }),
     })
@@ -73,9 +73,7 @@ const createUsersWithMessages = async () => {
     {
       username: 'ddavids',
       messages: [
-        {
-          text: 'Happy to release . . .',
-        },
+        { text: 'Happy to release . . .' },
         { text: 'Published a complete . . .' },
       ],
     },

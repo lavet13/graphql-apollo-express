@@ -1,6 +1,6 @@
-import { Message, Resolvers } from '../../__generated/types';
+import { Message, Resolvers } from '../__generated/types';
 
-type MyMessage = Message & { userId?: string };
+type MyMessage = Message & { user_id?: string };
 
 export default {
   Query: {
@@ -17,7 +17,7 @@ export default {
     async createMessage(_, { text }, { me, models }) {
       return await models.Message.create({
         text,
-        userId: me?.id,
+        user_id: me?.id,
       });
     },
 
@@ -32,7 +32,7 @@ export default {
 
   Message: {
     async user(message: MyMessage, _, { models }) {
-      return await models.User.findByPk(message.userId);
+      return await models.User.findByPk(message.user_id);
     },
   },
 } as Resolvers;

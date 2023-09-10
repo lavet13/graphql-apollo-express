@@ -9,19 +9,23 @@ export type User = ModelStatic<any> & {
 };
 
 export default (sequelize: Sequelize) => {
-  const User: User = sequelize.define('user', {
-    id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
+  const User: User = sequelize.define(
+    'user',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      username: {
+        type: DataTypes.STRING,
+      },
     },
-    username: {
-      type: DataTypes.STRING,
-    },
-  });
+    { freezeTableName: true }
+  );
 
   User.associate = ({ Message }) => {
-    User.hasMany(Message, { onDelete: 'CASCADE' });
+    User.hasMany(Message, { onDelete: 'CASCADE', foreignKey: 'user_id' });
   };
 
   User.findByLogin = async (login: string) => {
