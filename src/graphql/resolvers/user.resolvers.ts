@@ -26,6 +26,7 @@ export default {
         where: {
           user_id: user.id,
         },
+        order: [['updatedAt', 'DESC']],
       });
     },
   },

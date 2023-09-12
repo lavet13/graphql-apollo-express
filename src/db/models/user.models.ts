@@ -3,7 +3,6 @@ import { Sequelize, DataTypes, ModelStatic } from 'sequelize';
 import { Models } from '.';
 
 export type User = ModelStatic<any> & {
-  [key: string]: any;
   associate?: (models: Models) => void;
   findByLogin?: (login: string) => Promise<any | null>;
 };

@@ -1,6 +1,11 @@
 import { Sequelize } from 'sequelize';
 import UserModel, { User } from './user.models';
 import MessageModel, { Message } from './message.models';
+import ShipModel, { Ship } from './ship.models';
+import CaptainModel, { Captain } from './captain.models';
+import FooModel, { Foo } from './foo.models';
+import BarModel, { Bar } from './bar.models';
+import Foo_BarModel, { Foo_Bar } from './foo_bar.models';
 
 const sequelize = new Sequelize(
   import.meta.env.VITE_DATABASE,
@@ -14,11 +19,21 @@ const sequelize = new Sequelize(
 export type Models = {
   User: User;
   Message: Message;
+  Ship: Ship;
+  Captain: Captain;
+  Foo: Foo;
+  Bar: Bar;
+  Foo_Bar: Foo_Bar;
 };
 
 const models = {
   User: UserModel(sequelize),
   Message: MessageModel(sequelize),
+  Ship: ShipModel(sequelize),
+  Captain: CaptainModel(sequelize),
+  Foo: FooModel(sequelize),
+  Bar: BarModel(sequelize),
+  Foo_Bar: Foo_BarModel(sequelize),
 };
 
 (Object.keys(models) as (keyof typeof models)[]).forEach(key => {

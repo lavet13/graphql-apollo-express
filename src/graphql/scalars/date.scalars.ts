@@ -7,6 +7,7 @@ export default new GraphQLScalarType({
   name: 'Date',
   description: 'Date custom scalar type',
   serialize(value) {
+    // value sent to the client
     if (value instanceof Date) {
       return intlFormat(
         value,
@@ -29,6 +30,7 @@ export default new GraphQLScalarType({
   },
 
   parseValue(value) {
+    // value from the client
     if (typeof value === 'number') {
       return new Date(value);
     }
@@ -40,7 +42,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind === Kind.INT) {
-      return new Date(parseInt(ast.value, 10));
+      return new Date(parseInt(ast.value, 10)); // ast value is always in string format
     }
 
     return null;

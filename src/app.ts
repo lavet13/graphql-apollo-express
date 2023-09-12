@@ -60,6 +60,8 @@ async function bootstrap() {
   return app;
 }
 
+// Sequelize automatically pluralizes the model name and uses that as the table name.
+// this pluralization is done under the hood by a library: https://www.npmjs.com/package/inflection
 const createUsersWithMessages = async () => {
   await models.User.create(
     {
@@ -78,6 +80,21 @@ const createUsersWithMessages = async () => {
       ],
     },
     { include: [models.Message] }
+  );
+
+  await models.Captain.create(
+    { name: 'Jack Sparrow', ship: [{ name: "this is jack's ship tho :D" }] },
+    { include: [models.Ship] }
+  );
+
+  console.log(
+    await models.Foo.create(
+      {
+        name: 'just a name',
+        bars: [{ title: 'just a title' }],
+      },
+      { include: models.Bar }
+    )
   );
 };
 

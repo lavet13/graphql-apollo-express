@@ -3,7 +3,6 @@ import { DataTypes, ModelStatic, Sequelize } from 'sequelize';
 import { Models } from '.';
 
 export type Message = ModelStatic<any> & {
-  [key: string]: any;
   associate?: (models: Models) => void;
 };
 
