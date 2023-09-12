@@ -8,15 +8,13 @@ export type Foo = ModelStatic<any> & {
 export default (sequelize: Sequelize) => {
   const Foo: Foo = sequelize.define(
     'foo',
-    { name: { type: DataTypes.TEXT, unique: true } },
+    { name: { type: DataTypes.TEXT } },
     { timestamps: false, freezeTableName: true }
   );
 
   Foo.associate = models => {
     Foo.belongsToMany(models.Bar, {
       through: { model: models.Foo_Bar, unique: false },
-      // targetKey: 'title',
-      // sourceKey: 'name',
       foreignKey: 'foo_id',
     });
   };

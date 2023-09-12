@@ -87,14 +87,12 @@ const createUsersWithMessages = async () => {
     { include: [models.Ship] }
   );
 
-  console.log(
-    await models.Foo.create(
-      {
-        name: 'just a name',
-        bars: [{ title: 'just a title' }],
-      },
-      { include: models.Bar }
-    )
+  await models.Foo.create(
+    {
+      name: 'just a name',
+      bars: [{ title: 'just a title' }],
+    },
+    { include: models.Bar }
   );
 };
 
