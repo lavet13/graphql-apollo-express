@@ -9,7 +9,11 @@ export default (sequelize: Sequelize) => {
   const Captain: Captain = sequelize.define(
     'captain',
     {
-      name: { type: DataTypes.TEXT, unique: true },
+      name: {
+        type: DataTypes.TEXT,
+        unique: true,
+        validate: { notEmpty: true },
+      },
     },
     { timestamps: false, freezeTableName: true }
   );

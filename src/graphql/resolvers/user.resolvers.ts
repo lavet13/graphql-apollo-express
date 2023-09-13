@@ -1,9 +1,6 @@
 import { Resolvers } from '../__generated/types';
-import dateScalars from '../scalars/date.scalars';
 
 export default {
-  Date: dateScalars,
-
   Query: {
     async me(_, __, { me }) {
       return me ? me : null;

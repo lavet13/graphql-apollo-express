@@ -15,6 +15,8 @@ import typeDefs from './graphql/schema';
 import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
+import { Op, Sequelize } from 'sequelize';
+
 export interface ContextValue {
   me: User | null;
   models: Models;
@@ -92,8 +94,213 @@ const createUsersWithMessages = async () => {
       name: 'just a name',
       bars: [{ title: 'just a title' }],
     },
-    { include: models.Bar }
+    { include: [models.Bar] }
   );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.findAll({
+  //       attributes: ['id', 'text'],
+  //       where: {
+  //         id: {
+  //           [Op.notIn]: [1, 2],
+  //         },
+  //       },
+  //       include: [
+  //         {
+  //           model: models.User,
+  //         },
+  //       ],
+  //     })
+  //   )
+  // );
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Foo.findAll({
+  //       include: [
+  //         {
+  //           model: models.Bar,
+  //           through: {
+  //             attributes: [],
+  //           },
+  //         },
+  //       ],
+  //       order: [[models.Bar, 'id', 'DESC']],
+  //     })
+  //   )
+  // );
+
+  // const [Foo, FooIsCreated] = await models.Foo.findOrCreate({
+  //   where: {
+  //     name: 'just a name :DDDDD',
+  //   },
+  //   defaults: {
+  //     name: 'LULE',
+  //   },
+  // });
+
+  // if (FooIsCreated) {
+  //   console.log(JSON.stringify(Foo));
+  // }
+
+  // const { count, rows } = await models.Message.findAndCountAll({
+  // where: {
+  //   text: {
+  //     [Op.like]: 'P%',
+  //   },
+  // },
+
+  //   limit: 3,
+  //   offset: 0,
+  // });
+
+  // console.log(count, JSON.stringify(rows));
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.User.create(
+  //       { username: 'ivan' },
+  //       { fields: ['id', 'updatedAt', 'createdAt'] }
+  //     )
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.User.findAll({
+  //       attributes: [
+  //         ['id', 'user_id'],
+  //         [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+  //         'username',
+  //       ],
+  //       group: 'id',
+  //     })
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.findAll({
+  //       where: {
+  //         [Op.and]: [
+  //           {
+  //             user_id: {
+  //               [Op.or]: [1, 2],
+  //             },
+  //           },
+  //           {
+  //             text: {
+  //               [Op.like]: 'P%',
+  //             },
+  //           },
+  //         ],
+  //       },
+  //     })
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.findAll({
+  //       where: {
+  //         [Op.not]: {
+  //           [Op.or]: [
+  //             {
+  //               text: {
+  //                 [Op.like]: 'P%',
+  //               },
+  //             },
+  //             {
+  //               user_id: 1,
+  //             },
+  //           ],
+  //         },
+  //       },
+  //     })
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.findAll({
+  //       where: {
+  //         [Op.and]: [
+  //           sequelize.where(
+  //             sequelize.fn('char_length', sequelize.col('text')),
+  //             { [Op.lt]: 30 }
+  //           ),
+  //           {
+  //             text: {
+  //               [Op.notLike]: 'P%',
+  //             },
+  //           },
+  //         ],
+  //       },
+  //     })
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.update(
+  //       { text: 'updated text' },
+  //       {
+  //         where: {
+  //           user_id: 2,
+  //         },
+  //       }
+  //     )
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.destroy({
+  //       where: {
+  //         text: {
+  //           [Op.like]: 'P%',
+  //         },
+  //       },
+  //     })
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.destroy({
+  //       truncate: true,
+  //     })
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Captain.bulkCreate(
+  //       [{ name: 'Glad Valakas' }, { name: 'Davy Jones' }],
+  //       { validate: true, fields: ['name'] }
+  //     )
+  //   )
+  // );
+
+  // console.log(
+  //   JSON.stringify(
+  //     await models.Message.findAll({
+  //       attributes: ['id', 'text'],
+  //       order: [
+  //         [sequelize.fn('max', sequelize.col('message.createdAt')), 'DESC'],
+  //         [models.User, 'updatedAt', 'DESC'],
+  //       ],
+  //       group: [sequelize.col('message.id'), sequelize.col('user.id')],
+  //       include: [
+  //         {
+  //           model: models.User,
+  //           required: true,
+  //           attributes: ['id', 'username'],
+  //         },
+  //       ],
+  //     })
+  //   )
+  // );
 };
 
 const app = bootstrap();
