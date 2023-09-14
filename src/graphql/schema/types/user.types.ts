@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
 
 export default gql`
+  scalar Date
+
   type Query {
     users: [User!]
     user(id: ID!): User

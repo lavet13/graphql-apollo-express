@@ -8,14 +8,14 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
-import models, { Models, sequelize } from './db/models';
+import models, { Models, namespace, sequelize, t } from './db/models';
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
 
 import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, Transaction } from 'sequelize';
 
 export interface ContextValue {
   me: User | null;
@@ -301,6 +301,53 @@ const createUsersWithMessages = async () => {
   //     })
   //   )
   // );
+
+  // Unmanaged transaction
+  // try {
+  //   const user = await models.User.create(
+  //     {
+  //       username: 'ivan',
+  //     },
+  //     { transaction: t }
+  //   );
+
+  //   const message = await user.createMessage(
+  //     { text: 'just a text message' },
+  //     { transaction: t }
+  //   );
+
+  //   console.log(JSON.stringify(user));
+  //   console.log(JSON.stringify(message));
+
+  //   await t.commit();
+  // } catch (error) {
+  //   await t.rollback();
+  // }
+
+  // Managed transaction
+  // try {
+  //   const result = await sequelize.transaction(
+  //     { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
+  //     async t => {
+  //       t.afterCommit(() => {
+  //         console.log('after commit :D');
+  //       });
+  //       console.log(namespace.get('transaction') === t);
+
+  //       const user = await models.User.create({
+  //         username: 'Ivan',
+  //       });
+
+  //       const message = await user.createMessage({ text: 'my first message' });
+
+  //       return { user, message };
+  //     }
+  //   );
+
+  //   console.log(JSON.stringify(result));
+  // } catch (error) {
+  //   console.error(error);
+  // }
 };
 
 const app = bootstrap();
