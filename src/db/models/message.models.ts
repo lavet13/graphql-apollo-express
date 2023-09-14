@@ -17,6 +17,11 @@ export default (sequelize: Sequelize) => {
       },
       text: {
         type: DataTypes.TEXT,
+        validate: {
+          notEmpty: {
+            msg: 'Сообщение не должно быть пусто!',
+          },
+        },
       },
     },
     { freezeTableName: true }

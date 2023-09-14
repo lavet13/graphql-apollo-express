@@ -18,6 +18,16 @@ export default (sequelize: Sequelize) => {
       },
       username: {
         type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+        validate: {
+          notNull: {
+            msg: 'Имя пользователя не может быть Null!',
+          },
+          notEmpty: {
+            msg: 'Имя пользователя не может быть пустым!',
+          },
+        },
       },
     },
     { freezeTableName: true }

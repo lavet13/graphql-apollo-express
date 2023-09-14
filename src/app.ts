@@ -7,6 +7,7 @@ import http from 'http';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import models, { Models, namespace, sequelize, t } from './db/models';
 import resolvers from './graphql/resolvers';
@@ -35,6 +36,20 @@ async function bootstrap() {
   const server = new ApolloServer<ContextValue>({
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    formatError(formattedError, _) {
+      if (formattedError.message.startsWith('Validation error:')) {
+        return {
+          ...formattedError,
+          message: formattedError.message.replace(/^Validation error: /, ''),
+          extensions: {
+            ...formattedError?.extensions,
+            code: ApolloServerErrorCode.GRAPHQL_VALIDATION_FAILED,
+          },
+        };
+      }
+
+      return formattedError;
+    },
   });
 
   await server.start();
@@ -348,6 +363,13 @@ const createUsersWithMessages = async () => {
   // } catch (error) {
   //   console.error(error);
   // }
+
+  // Testing validations
+  try {
+    console.log(JSON.stringify(await models.User.create({ username: '' })));
+  } catch (error) {
+    console.log({ error });
+  }
 };
 
 const app = bootstrap();
