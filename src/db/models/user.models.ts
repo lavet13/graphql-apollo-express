@@ -1,8 +1,28 @@
-import { Sequelize, DataTypes, ModelStatic } from 'sequelize';
+import {
+  Sequelize,
+  DataTypes,
+  ModelStatic,
+  Model,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from 'sequelize';
 
 import { Models } from '.';
 
-export type User = ModelStatic<any> & {
+export interface UserModel
+  extends Model<
+    InferAttributes<UserModel>,
+    InferCreationAttributes<UserModel>
+  > {
+  [key: string]: any;
+  id: CreationOptional<string>;
+  username: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type User = ModelStatic<UserModel> & {
   associate?: (models: Models) => void;
   findByLogin?: (login: string) => Promise<any | null>;
 };
@@ -27,6 +47,16 @@ export default (sequelize: Sequelize) => {
           notEmpty: {
             msg: 'Имя пользователя не может быть пустым!',
           },
+        },
+
+        get() {
+          const rawValue = this.getDataValue('username');
+          const newValue = rawValue.replace(/!+/i, '');
+          return `${newValue.toUpperCase()}: ${this.id}`;
+        },
+
+        set(value: string) {
+          this.setDataValue('username', value + '!!');
         },
       },
     },

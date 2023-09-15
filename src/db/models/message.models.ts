@@ -1,8 +1,31 @@
-import { DataTypes, ModelStatic, Sequelize } from 'sequelize';
+import {
+  CreationOptional,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+  ModelStatic,
+  Sequelize,
+} from 'sequelize';
+
+import { gunzipSync, gzipSync } from 'node:zlib';
 
 import { Models } from '.';
 
-export type Message = ModelStatic<any> & {
+export interface MessageModel
+  extends Model<
+    InferAttributes<MessageModel>,
+    InferCreationAttributes<MessageModel>
+  > {
+  [key: string]: any;
+  id: CreationOptional<string>;
+  text: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: any;
+}
+
+export type Message = ModelStatic<MessageModel> & {
   associate?: (models: Models) => void;
 };
 
@@ -21,6 +44,18 @@ export default (sequelize: Sequelize) => {
           notEmpty: {
             msg: 'Сообщение не должно быть пусто!',
           },
+        },
+
+        get() {
+          const storedValue = this.getDataValue('text');
+          const gzippedBuffer = Buffer.from(storedValue, 'base64');
+          const unzippedBuffer = gunzipSync(gzippedBuffer);
+          return unzippedBuffer.toString();
+        },
+
+        set(value: string) {
+          const gzippedBuffer = gzipSync(value);
+          this.setDataValue('text', gzippedBuffer.toString('base64'));
         },
       },
     },

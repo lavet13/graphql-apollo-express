@@ -366,7 +366,18 @@ const createUsersWithMessages = async () => {
 
   // Testing validations
   try {
-    console.log(JSON.stringify(await models.User.create({ username: '' })));
+    const user = await models.User.create({ username: 'ivan' });
+    console.log(JSON.stringify(user));
+    console.log(user.username); // from getter function
+    console.log(user.getDataValue('username')); // from database
+
+    const message = await models.Message.create({
+      text: 'FORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSEN',
+      user_id: user.getDataValue('id'),
+    });
+
+    console.log(message.text); // from get()
+    console.log(message.getDataValue('text')); // from db
   } catch (error) {
     console.log({ error });
   }
