@@ -18,6 +18,7 @@ export interface UserModel
   [key: string]: any;
   id: CreationOptional<string>;
   username: string;
+  // usernameWithId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,20 +48,37 @@ export default (sequelize: Sequelize) => {
           notEmpty: {
             msg: 'Имя пользователя не может быть пустым!',
           },
+          // containsSomething(value: string) {
+          //   if (value.includes('test')) {
+          //     throw new Error('AGAAAAA!!!!!!!!!!');
+          //   }
+          // },
         },
 
-        get() {
-          const rawValue = this.getDataValue('username');
-          const newValue = rawValue.replace(/!+/i, '');
-          return `${newValue.toUpperCase()}: ${this.id}`;
-        },
+        // get() {
+        //   const rawValue = this.getDataValue('username');
+        //   const newValue = rawValue.replace(/!+/i, '');
+        //   return `${newValue.toUpperCase()}: ${this.id}`;
+        // },
 
-        set(value: string) {
-          this.setDataValue('username', value + '!!');
-        },
+        // set(value: string) {
+        //   this.setDataValue('username', value + '!!');
+        // },
       },
+
+      // usernameWithId: {
+      //   type: DataTypes.VIRTUAL,
+
+      //   get() {
+      //     return `${this.id}: ${this.getDataValue('username')}`;
+      //   },
+
+      //   set(_: string) {
+      //     throw new Error(`Do not try to set the \`usernameWithId\` value!`);
+      //   },
+      // },
     },
-    { freezeTableName: true }
+    { freezeTableName: true, underscored: true }
   );
 
   User.associate = ({ Message }) => {

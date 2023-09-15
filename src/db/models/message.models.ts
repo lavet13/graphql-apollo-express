@@ -59,7 +59,7 @@ export default (sequelize: Sequelize) => {
         },
       },
     },
-    { freezeTableName: true }
+    { freezeTableName: true, underscored: true }
   );
 
   Message.associate = ({ User }) => {

@@ -175,7 +175,7 @@ const createUsersWithMessages = async () => {
   //   JSON.stringify(
   //     await models.User.create(
   //       { username: 'ivan' },
-  //       { fields: ['id', 'updatedAt', 'createdAt'] }
+  //       { fields: ['id', 'updated_at', 'created_at'] }
   //     )
   //   )
   // );
@@ -302,8 +302,8 @@ const createUsersWithMessages = async () => {
   //     await models.Message.findAll({
   //       attributes: ['id', 'text'],
   //       order: [
-  //         [sequelize.fn('max', sequelize.col('message.createdAt')), 'DESC'],
-  //         [models.User, 'updatedAt', 'DESC'],
+  //         [sequelize.fn('max', sequelize.col('message.created_at')), 'DESC'],
+  //         [models.User, 'updated_at', 'DESC'],
   //       ],
   //       group: [sequelize.col('message.id'), sequelize.col('user.id')],
   //       include: [
@@ -365,22 +365,26 @@ const createUsersWithMessages = async () => {
   // }
 
   // Testing validations
-  try {
-    const user = await models.User.create({ username: 'ivan' });
-    console.log(JSON.stringify(user));
-    console.log(user.username); // from getter function
-    console.log(user.getDataValue('username')); // from database
+  // try {
+  //   const user = await models.User.create({ username: 'ivan' });
+  //   console.log(JSON.stringify(user));
+  //   console.log(user.username); // from getter function
+  //   console.log(user.getDataValue('username')); // from database
+  //   console.log(user.usernameWithId);
 
-    const message = await models.Message.create({
-      text: 'FORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSEN',
-      user_id: user.getDataValue('id'),
-    });
+  //   const message = await models.Message.create({
+  //     text: 'FORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSEN',
+  //     user_id: user.getDataValue('id'),
+  //   });
 
-    console.log(message.text); // from get()
-    console.log(message.getDataValue('text')); // from db
-  } catch (error) {
-    console.log({ error });
-  }
+  //   console.log(message.text); // from get()
+  //   console.log(message.getDataValue('text')); // from db
+
+  //   const testUser = await models.User.create({ username: 'test' });
+  //   console.log(JSON.stringify(testUser));
+  // } catch (error) {
+  //   console.log({ error });
+  // }
 };
 
 const app = bootstrap();
