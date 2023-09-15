@@ -12,6 +12,7 @@ export default gql`
   type User {
     id: ID!
     username: String!
+    email: String!
     createdAt: Date!
     updatedAt: Date!
     messages: [Message!]

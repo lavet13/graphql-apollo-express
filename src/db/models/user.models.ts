@@ -8,6 +8,8 @@ import {
   CreationOptional,
 } from 'sequelize';
 
+import bcrypt from 'bcryptjs';
+
 import { Models } from '.';
 
 export interface UserModel
@@ -18,6 +20,8 @@ export interface UserModel
   [key: string]: any;
   id: CreationOptional<string>;
   username: string;
+  email: string;
+  hashedPassword: string;
   // usernameWithId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -54,7 +58,6 @@ export default (sequelize: Sequelize) => {
           //   }
           // },
         },
-
         // get() {
         //   const rawValue = this.getDataValue('username');
         //   const newValue = rawValue.replace(/!+/i, '');
@@ -77,9 +80,67 @@ export default (sequelize: Sequelize) => {
       //     throw new Error(`Do not try to set the \`usernameWithId\` value!`);
       //   },
       // },
+
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+          notEmpty: {
+            msg: 'E-mail не может быть пустым!',
+          },
+          isEmail: {
+            msg: 'Неверный формат E-mail',
+          },
+        },
+      },
+
+      hashedPassword: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+          notNull: {
+            msg: 'Пароль не может быть Null',
+          },
+          notEmpty: {
+            msg: 'Пароль не может быть пуст!',
+          },
+        },
+      },
     },
-    { freezeTableName: true, underscored: true }
+    {
+      freezeTableName: true,
+      underscored: true,
+      hooks: {
+        beforeCreate: async function (user, _) {
+          try {
+            const saltRounds = 10;
+
+            const salt = await bcrypt.genSalt(saltRounds);
+
+            try {
+              user.hashedPassword = await bcrypt.hash(
+                user.hashedPassword,
+                salt
+              );
+            } catch (error) {
+              console.log({ hashError: error });
+            }
+          } catch (error) {
+            console.log({ saltError: error });
+          }
+        },
+      },
+    }
   );
+
+  User.prototype.validPassword = async function (password: string) {
+    try {
+      return await bcrypt.compare(password, this.hashedPassword);
+    } catch (error) {
+      console.log({ compareError: error });
+    }
+  };
 
   User.associate = ({ Message }) => {
     User.hasMany(Message, { onDelete: 'CASCADE', foreignKey: 'user_id' });
@@ -90,11 +151,11 @@ export default (sequelize: Sequelize) => {
       where: { username: login },
     });
 
-    // if (!user) {
-    //       user = await User.findOne({
-    //         where: { email: login },
-    //       });
-    //     }
+    if (!user) {
+      user = await User.findOne({
+        where: { email: login },
+      });
+    }
 
     return user;
   };

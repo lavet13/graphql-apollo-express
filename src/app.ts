@@ -80,24 +80,32 @@ async function bootstrap() {
 // Sequelize automatically pluralizes the model name and uses that as the table name.
 // this pluralization is done under the hood by a library: https://www.npmjs.com/package/inflection
 const createUsersWithMessages = async () => {
-  await models.User.create(
-    {
-      username: 'rwieruch',
-      messages: [{ text: 'Published the Road to learn React' }],
-    },
-    { include: [models.Message] }
-  );
+  try {
+    await models.User.create(
+      {
+        username: 'rwieruch',
+        email: 'rwieruch@gmail.com',
+        hashedPassword: 'password',
+        messages: [{ text: 'Published the Road to learn React' }],
+      },
+      { include: [models.Message] }
+    );
 
-  await models.User.create(
-    {
-      username: 'ddavids',
-      messages: [
-        { text: 'Happy to release . . .' },
-        { text: 'Published a complete . . .' },
-      ],
-    },
-    { include: [models.Message] }
-  );
+    await models.User.create(
+      {
+        username: 'ddavids',
+        email: 'ddavids@gmail.com',
+        hashedPassword: 'password',
+        messages: [
+          { text: 'Happy to release . . .' },
+          { text: 'Published a complete . . .' },
+        ],
+      },
+      { include: [models.Message] }
+    );
+  } catch (error) {
+    console.log({ error });
+  }
 
   await models.Captain.create(
     { name: 'Jack Sparrow', ship: [{ name: "this is jack's ship tho :D" }] },

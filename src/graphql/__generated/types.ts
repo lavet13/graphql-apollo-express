@@ -72,6 +72,7 @@ export type QueryUserArgs = {
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['Date']['output'];
+  email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   messages?: Maybe<Array<Message>>;
   updatedAt: Scalars['Date']['output'];
@@ -203,6 +204,7 @@ export type QueryResolvers<ContextType = ContextValue, ParentType extends Resolv
 
 export type UserResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<ResolversTypes['Message']>>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
