@@ -102,8 +102,14 @@ export default (sequelize: Sequelize) => {
           notNull: {
             msg: 'Пароль не может быть Null',
           },
+
           notEmpty: {
             msg: 'Пароль не может быть пуст!',
+          },
+
+          len: {
+            args: [7, 42],
+            msg: 'Пароль пользователя должен содержать от 7 до 42 символов',
           },
         },
       },
