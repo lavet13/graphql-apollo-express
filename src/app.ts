@@ -85,7 +85,7 @@ const createUsersWithMessages = async () => {
       {
         username: 'rwieruch',
         email: 'rwieruch@gmail.com',
-        hashedPassword: 'password',
+        password: 'password',
         messages: [{ text: 'Published the Road to learn React' }],
       },
       { include: [models.Message] }
@@ -95,7 +95,7 @@ const createUsersWithMessages = async () => {
       {
         username: 'ddavids',
         email: 'ddavids@gmail.com',
-        hashedPassword: 'password',
+        password: 'password',
         messages: [
           { text: 'Happy to release . . .' },
           { text: 'Published a complete . . .' },

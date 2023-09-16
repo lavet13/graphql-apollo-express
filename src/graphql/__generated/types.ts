@@ -31,6 +31,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createMessage: Message;
   deleteMessage: Scalars['Int']['output'];
+  signUp: Token;
   updateMessage?: Maybe<Array<Scalars['Int']['output']>>;
 };
 
@@ -42,6 +43,13 @@ export type MutationCreateMessageArgs = {
 
 export type MutationDeleteMessageArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSignUpArgs = {
+  email: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+  username: Scalars['String']['input'];
 };
 
 
@@ -67,6 +75,11 @@ export type QueryMessageArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['ID']['input'];
+};
+
+export type Token = {
+  __typename?: 'Token';
+  token: Scalars['String']['output'];
 };
 
 export type User = {
@@ -159,6 +172,7 @@ export type ResolversTypes = ResolversObject<{
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  Token: ResolverTypeWrapper<Token>;
   User: ResolverTypeWrapper<User>;
 }>;
 
@@ -172,6 +186,7 @@ export type ResolversParentTypes = ResolversObject<{
   Mutation: {};
   Query: {};
   String: Scalars['String']['output'];
+  Token: Token;
   User: User;
 }>;
 
@@ -191,6 +206,7 @@ export type MessageResolvers<ContextType = ContextValue, ParentType extends Reso
 export type MutationResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationCreateMessageArgs, 'text'>>;
   deleteMessage?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
+  signUp?: Resolver<ResolversTypes['Token'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'password' | 'username'>>;
   updateMessage?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'id' | 'text'>>;
 }>;
 
@@ -200,6 +216,11 @@ export type QueryResolvers<ContextType = ContextValue, ParentType extends Resolv
   messages?: Resolver<Array<ResolversTypes['Message']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
+}>;
+
+export type TokenResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Token'] = ResolversParentTypes['Token']> = ResolversObject<{
+  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type UserResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
@@ -217,6 +238,7 @@ export type Resolvers<ContextType = ContextValue> = ResolversObject<{
   Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Token?: TokenResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 }>;
 

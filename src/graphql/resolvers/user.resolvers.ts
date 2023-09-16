@@ -1,5 +1,10 @@
+import { UserModel } from '../../db/models/user.models';
 import { Resolvers } from '../__generated/types';
 import dateScalars from '../scalars/date.scalars';
+
+const createToken = (user: UserModel) => {
+  return '';
+};
 
 export default {
   Date: dateScalars,
@@ -17,6 +22,19 @@ export default {
 
     async users(_, __, { models }) {
       return await models.User.findAll();
+    },
+  },
+
+  Mutation: {
+    async signUp(_, { email, password, username }, { models }) {
+      console.log({ password });
+      const user = await models.User.create({
+        username,
+        password,
+        email,
+      });
+
+      return { token: createToken(user) };
     },
   },
 

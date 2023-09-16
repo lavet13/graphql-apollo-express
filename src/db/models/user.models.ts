@@ -21,7 +21,7 @@ export interface UserModel
   id: CreationOptional<string>;
   username: string;
   email: string;
-  hashedPassword: string;
+  password: string;
   // usernameWithId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -95,7 +95,7 @@ export default (sequelize: Sequelize) => {
         },
       },
 
-      hashedPassword: {
+      password: {
         type: DataTypes.TEXT,
         allowNull: false,
         validate: {
@@ -125,10 +125,7 @@ export default (sequelize: Sequelize) => {
             const salt = await bcrypt.genSalt(saltRounds);
 
             try {
-              user.hashedPassword = await bcrypt.hash(
-                user.hashedPassword,
-                salt
-              );
+              user.password = await bcrypt.hash(user.password, salt);
             } catch (error) {
               console.log({ hashError: error });
             }
@@ -142,7 +139,7 @@ export default (sequelize: Sequelize) => {
 
   User.prototype.validPassword = async function (password: string) {
     try {
-      return await bcrypt.compare(password, this.hashedPassword);
+      return await bcrypt.compare(password, this.password);
     } catch (error) {
       console.log({ compareError: error });
     }
