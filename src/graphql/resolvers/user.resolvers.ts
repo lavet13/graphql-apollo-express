@@ -1,9 +1,15 @@
 import { UserModel } from '../../db/models/user.models';
 import { Resolvers } from '../__generated/types';
-import dateScalars from '../scalars/date.scalars';
 
-const createToken = (user: UserModel) => {
-  return '';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+
+import dateScalars from '../scalars/date.scalars';
+import jwt from 'jsonwebtoken';
+
+const createToken = (user: UserModel, secret: string, expiresIn: string) => {
+  const { id, email, username } = user;
+  return jwt.sign({ id, email, username }, secret, { expiresIn });
 };
 
 export default {
@@ -26,15 +32,38 @@ export default {
   },
 
   Mutation: {
-    async signUp(_, { email, password, username }, { models }) {
-      console.log({ password });
+    async signUp(
+      _,
+      { email, password, username },
+      { models, secret, expiresIn }
+    ) {
       const user = await models.User.create({
         username,
         password,
         email,
       });
 
-      return { token: createToken(user) };
+      return { token: createToken(user, secret, expiresIn) };
+    },
+
+    async signIn(_, { login, password }, { models, secret, expiresIn }) {
+      const user = (await models.User.findByLogin?.(login)) as UserModel | null;
+
+      if (!user) {
+        throw new GraphQLError('Логин не существует', {
+          extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
+        });
+      }
+
+      const isValid = await user.validPassword(password);
+
+      if (typeof isValid === 'boolean' && !isValid) {
+        throw new GraphQLError('Неверный пароль', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      return { token: createToken(user, secret, expiresIn) };
     },
   },
 

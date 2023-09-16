@@ -21,6 +21,8 @@ import { Op, Sequelize, Transaction } from 'sequelize';
 export interface ContextValue {
   me: User | null;
   models: Models;
+  secret: string;
+  expiresIn: string;
 }
 
 const schema = makeExecutableSchema({
@@ -70,6 +72,8 @@ async function bootstrap() {
       context: async _ => ({
         me: await models.User.findByLogin?.('ddavids'),
         models,
+        secret: import.meta.env.VITE_JWT_SECRET,
+        expiresIn: import.meta.env.VITE_JWT_EXPIRES_IN,
       }),
     })
   );

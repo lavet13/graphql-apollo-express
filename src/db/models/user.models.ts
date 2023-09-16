@@ -12,6 +12,9 @@ import bcrypt from 'bcryptjs';
 
 import { Models } from '.';
 
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+
 export interface UserModel
   extends Model<
     InferAttributes<UserModel>,
@@ -25,6 +28,9 @@ export interface UserModel
   // usernameWithId: string;
   createdAt: Date;
   updatedAt: Date;
+
+  generatePasswordHash: () => Promise<string>;
+  validPassword: (password: string) => Promise<boolean>;
 }
 
 export type User = ModelStatic<UserModel> & {
@@ -117,31 +123,36 @@ export default (sequelize: Sequelize) => {
     {
       freezeTableName: true,
       underscored: true,
-      hooks: {
-        beforeCreate: async function (user, _) {
-          try {
-            const saltRounds = 10;
-
-            const salt = await bcrypt.genSalt(saltRounds);
-
-            try {
-              user.password = await bcrypt.hash(user.password, salt);
-            } catch (error) {
-              console.log({ hashError: error });
-            }
-          } catch (error) {
-            console.log({ saltError: error });
-          }
-        },
-      },
     }
   );
+
+  User.beforeCreate(async (user, _) => {
+    user.password = await user.generatePasswordHash();
+  });
 
   User.prototype.validPassword = async function (password: string) {
     try {
       return await bcrypt.compare(password, this.password);
     } catch (error) {
-      console.log({ compareError: error });
+      console.log({ bcryptCompare: error });
+
+      throw new GraphQLError('Internal server error!', {
+        extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
+      });
+    }
+  };
+
+  User.prototype.generatePasswordHash = async function () {
+    const saltRounds = 10;
+
+    try {
+      return await bcrypt.hash(this.password, saltRounds);
+    } catch (error) {
+      console.log({ bcryptHash: error });
+
+      throw new GraphQLError('Internal server error!', {
+        extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
+      });
     }
   };
 

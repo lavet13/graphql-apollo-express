@@ -25,7 +25,7 @@ export default new GraphQLScalarType({
 
     throw new GraphQLError(
       'GraphQL Date Scalar serializer expected a `Date` object',
-      { extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR } }
+      { extensions: { code: ApolloServerErrorCode.GRAPHQL_PARSE_FAILED } }
     );
   },
 
@@ -36,7 +36,7 @@ export default new GraphQLScalarType({
     }
 
     throw new GraphQLError('GraphQL Date Scalar parser expected a `number`', {
-      extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
+      extensions: { code: ApolloServerErrorCode.GRAPHQL_PARSE_FAILED },
     });
   },
 

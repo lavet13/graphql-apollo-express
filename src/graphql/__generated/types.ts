@@ -31,6 +31,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createMessage: Message;
   deleteMessage: Scalars['Int']['output'];
+  signIn: Token;
   signUp: Token;
   updateMessage?: Maybe<Array<Scalars['Int']['output']>>;
 };
@@ -43,6 +44,12 @@ export type MutationCreateMessageArgs = {
 
 export type MutationDeleteMessageArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSignInArgs = {
+  login: Scalars['String']['input'];
+  password: Scalars['String']['input'];
 };
 
 
@@ -206,6 +213,7 @@ export type MessageResolvers<ContextType = ContextValue, ParentType extends Reso
 export type MutationResolvers<ContextType = ContextValue, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationCreateMessageArgs, 'text'>>;
   deleteMessage?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
+  signIn?: Resolver<ResolversTypes['Token'], ParentType, ContextType, RequireFields<MutationSignInArgs, 'login' | 'password'>>;
   signUp?: Resolver<ResolversTypes['Token'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'password' | 'username'>>;
   updateMessage?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'id' | 'text'>>;
 }>;
