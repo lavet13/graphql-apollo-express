@@ -5,7 +5,6 @@ import {
   Model,
   InferAttributes,
   InferCreationAttributes,
-  CreationOptional,
 } from 'sequelize';
 
 import bcrypt from 'bcryptjs';
@@ -21,16 +20,17 @@ export interface UserModel
     InferCreationAttributes<UserModel>
   > {
   [key: string]: any;
-  id: CreationOptional<string>;
+  id: string;
   username: string;
   email: string;
   password: string;
+  role?: any;
   // usernameWithId: string;
   createdAt: Date;
   updatedAt: Date;
 
   generatePasswordHash: () => Promise<string>;
-  validPassword: (password: string) => Promise<boolean>;
+  validatePassword: (password: string) => Promise<boolean>;
 }
 
 export type User = ModelStatic<UserModel> & {
@@ -130,7 +130,7 @@ export default (sequelize: Sequelize) => {
     user.password = await user.generatePasswordHash();
   });
 
-  User.prototype.validPassword = async function (password: string) {
+  User.prototype.validatePassword = async function (password: string) {
     try {
       return await bcrypt.compare(password, this.password);
     } catch (error) {
@@ -156,8 +156,13 @@ export default (sequelize: Sequelize) => {
     }
   };
 
-  User.associate = ({ Message }) => {
-    User.hasMany(Message, { onDelete: 'CASCADE', foreignKey: 'user_id' });
+  User.associate = ({ Message, Role }) => {
+    User.hasMany(Message, {
+      onDelete: 'CASCADE',
+      foreignKey: { allowNull: false },
+    });
+
+    User.belongsTo(Role);
   };
 
   User.findByLogin = async (login: string) => {

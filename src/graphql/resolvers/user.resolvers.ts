@@ -1,5 +1,5 @@
 import { UserModel } from '../../db/models/user.models';
-import { Resolvers } from '../__generated/types';
+import { Resolvers, User } from '../__generated/types';
 
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
@@ -10,6 +10,10 @@ import jwt from 'jsonwebtoken';
 const createToken = (user: UserModel, secret: string, expiresIn: string) => {
   const { id, email, username } = user;
   return jwt.sign({ id, email, username }, secret, { expiresIn });
+};
+
+type MyUser = User & {
+  roleId?: string;
 };
 
 export default {
@@ -55,7 +59,7 @@ export default {
         });
       }
 
-      const isValid = await user.validPassword(password);
+      const isValid = await user.validatePassword(password);
 
       if (typeof isValid === 'boolean' && !isValid) {
         throw new GraphQLError('Неверный пароль', {
@@ -65,6 +69,14 @@ export default {
 
       return { token: createToken(user, secret, expiresIn) };
     },
+
+    async deleteUser(_, { id }, { models }) {
+      return !!(await models.User.destroy({
+        where: {
+          id,
+        },
+      }));
+    },
   },
 
   User: {
@@ -73,7 +85,14 @@ export default {
         where: {
           user_id: user.id,
         },
-        order: [['updatedAt', 'DESC']],
+        order: [['updated_at', 'DESC']],
+      });
+    },
+
+    async role(user: MyUser, _, { models }) {
+      console.log(JSON.stringify({ user }));
+      return await models.Role.findOne({
+        where: { id: user.roleId },
       });
     },
   },

@@ -7,6 +7,7 @@ import CaptainModel, { Captain } from './captain.models';
 import FooModel, { Foo } from './foo.models';
 import BarModel, { Bar } from './bar.models';
 import Foo_BarModel, { Foo_Bar } from './foo_bar.models';
+import RoleModel, { Role } from './role.models';
 
 export const namespace = cls.createNamespace('my-namespace');
 Sequelize.useCLS(namespace);
@@ -30,6 +31,7 @@ export type Models = {
   Foo: Foo;
   Bar: Bar;
   Foo_Bar: Foo_Bar;
+  Role: Role;
 };
 
 const models = {
@@ -40,6 +42,7 @@ const models = {
   Foo: FooModel(sequelize),
   Bar: BarModel(sequelize),
   Foo_Bar: Foo_BarModel(sequelize),
+  Role: RoleModel(sequelize),
 };
 
 (Object.keys(models) as (keyof typeof models)[]).forEach(key => {

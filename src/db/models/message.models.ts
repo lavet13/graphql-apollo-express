@@ -1,5 +1,4 @@
 import {
-  CreationOptional,
   DataTypes,
   InferAttributes,
   InferCreationAttributes,
@@ -18,7 +17,7 @@ export interface MessageModel
     InferCreationAttributes<MessageModel>
   > {
   [key: string]: any;
-  id: CreationOptional<string>;
+  id: string;
   text: string;
   createdAt: Date;
   updatedAt: Date;
@@ -63,7 +62,9 @@ export default (sequelize: Sequelize) => {
   );
 
   Message.associate = ({ User }) => {
-    Message.belongsTo(User, { foreignKey: 'user_id' });
+    Message.belongsTo(User, {
+      foreignKey: { allowNull: false },
+    });
   };
 
   return Message;

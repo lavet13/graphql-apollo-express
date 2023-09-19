@@ -93,7 +93,9 @@ async function bootstrap() {
 // this pluralization is done under the hood by a library: https://www.npmjs.com/package/inflection
 const createUsersWithMessages = async () => {
   try {
-    await models.User.create(
+    const adminRole = await models.Role.create({ name: 'Admin' });
+
+    const firstUser = await models.User.create(
       {
         username: 'rwieruch',
         email: 'rwieruch@gmail.com',
@@ -103,7 +105,9 @@ const createUsersWithMessages = async () => {
       { include: [models.Message] }
     );
 
-    await models.User.create(
+    firstUser.setRole(adminRole);
+
+    const secondUser = await models.User.create(
       {
         username: 'ddavids',
         email: 'ddavids@gmail.com',
@@ -115,6 +119,8 @@ const createUsersWithMessages = async () => {
       },
       { include: [models.Message] }
     );
+
+    secondUser.setRole(adminRole);
   } catch (error) {
     console.log({ error });
   }

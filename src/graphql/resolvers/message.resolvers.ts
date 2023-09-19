@@ -6,7 +6,7 @@ import {
   ResolversComposerMapping,
 } from '@graphql-tools/resolvers-composition';
 
-type MyMessage = Message & { user_id?: string };
+type MyMessage = Message & { userId?: string };
 
 const resolvers = {
   Query: {
@@ -20,7 +20,7 @@ const resolvers = {
   },
 
   Mutation: {
-    createMessage: async (_, { text }, { me, models }) => {
+    async createMessage(_, { text }, { me, models }) {
       return await models.Message.create({
         text,
         user_id: me?.id,
@@ -28,7 +28,7 @@ const resolvers = {
     },
 
     async deleteMessage(_, { id }, { models }) {
-      return await models.Message.destroy({ where: { id } });
+      return !!(await models.Message.destroy({ where: { id } }));
     },
 
     async updateMessage(_, { id, text }, { models }) {
@@ -38,7 +38,7 @@ const resolvers = {
 
   Message: {
     async user(message: MyMessage, _, { models }) {
-      return await models.User.findByPk(message.user_id);
+      return await models.User.findByPk(message.userId);
     },
   },
 } as Resolvers;

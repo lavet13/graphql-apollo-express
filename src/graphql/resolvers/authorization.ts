@@ -3,7 +3,6 @@ import { GraphQLError, GraphQLFieldResolver } from 'graphql';
 import { ResolversComposition } from '@graphql-tools/resolvers-composition';
 
 import {
-  MutationCreateMessageArgs,
   MutationDeleteMessageArgs,
   ResolversParentTypes,
 } from '../__generated/types';
@@ -13,7 +12,7 @@ import { ContextValue } from '../../app';
 type AuthenticatedResolver = GraphQLFieldResolver<
   ResolversParentTypes['Mutation'],
   ContextValue,
-  MutationCreateMessageArgs
+  any
 >;
 
 export const isAuthenticated =
