@@ -5,6 +5,7 @@ import {
   Model,
   InferAttributes,
   InferCreationAttributes,
+  CreationOptional,
 } from 'sequelize';
 
 import bcrypt from 'bcryptjs';
@@ -13,22 +14,25 @@ import { Models } from '.';
 
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { RoleModel } from './role.models';
+import { MessageModel } from './message.models';
 
 export interface UserModel
   extends Model<
     InferAttributes<UserModel>,
     InferCreationAttributes<UserModel>
   > {
-  [key: string]: any;
-  id: string;
+  id: CreationOptional<string>;
   username: string;
   email: string;
   password: string;
-  role?: any;
+  roleId: CreationOptional<number>;
   // usernameWithId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: CreationOptional<Date>;
+  updatedAt: CreationOptional<Date>;
 
+  messages: CreationOptional<Partial<MessageModel>[]>;
+  setRole: (role: RoleModel) => void;
   generatePasswordHash: () => Promise<string>;
   validatePassword: (password: string) => Promise<boolean>;
 }

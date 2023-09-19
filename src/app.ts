@@ -94,6 +94,7 @@ async function bootstrap() {
 const createUsersWithMessages = async () => {
   try {
     const adminRole = await models.Role.create({ name: 'Admin' });
+    const userRole = await models.Role.create({ name: 'User' });
 
     const firstUser = await models.User.create(
       {
@@ -120,7 +121,7 @@ const createUsersWithMessages = async () => {
       { include: [models.Message] }
     );
 
-    secondUser.setRole(adminRole);
+    secondUser.setRole(userRole);
   } catch (error) {
     console.log({ error });
   }

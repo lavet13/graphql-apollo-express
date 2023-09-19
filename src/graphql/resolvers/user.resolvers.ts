@@ -1,5 +1,5 @@
 import { UserModel } from '../../db/models/user.models';
-import { Resolvers, User } from '../__generated/types';
+import { Resolvers } from '../__generated/types';
 
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
@@ -10,10 +10,6 @@ import jwt from 'jsonwebtoken';
 const createToken = (user: UserModel, secret: string, expiresIn: string) => {
   const { id, email, username } = user;
   return jwt.sign({ id, email, username }, secret, { expiresIn });
-};
-
-type MyUser = User & {
-  roleId?: string;
 };
 
 export default {
@@ -45,6 +41,7 @@ export default {
         username,
         password,
         email,
+        roleId: 2,
       });
 
       return { token: createToken(user, secret, expiresIn) };
@@ -83,14 +80,13 @@ export default {
     async messages(user, _, { models }) {
       return await models.Message.findAll({
         where: {
-          user_id: user.id,
+          userId: user.id,
         },
-        order: [['updated_at', 'DESC']],
+        order: [['updatedAt', 'DESC']],
       });
     },
 
-    async role(user: MyUser, _, { models }) {
-      console.log(JSON.stringify({ user }));
+    async role(user, _, { models }) {
       return await models.Role.findOne({
         where: { id: user.roleId },
       });

@@ -1,12 +1,10 @@
-import { Message, Resolvers } from '../__generated/types';
+import { Resolvers } from '../__generated/types';
 
 import { isAuthenticated, isMessageOwner } from './authorization';
 import {
   composeResolvers,
   ResolversComposerMapping,
 } from '@graphql-tools/resolvers-composition';
-
-type MyMessage = Message & { userId?: string };
 
 const resolvers = {
   Query: {
@@ -23,7 +21,7 @@ const resolvers = {
     async createMessage(_, { text }, { me, models }) {
       return await models.Message.create({
         text,
-        user_id: me?.id,
+        userId: me?.id,
       });
     },
 
@@ -37,7 +35,7 @@ const resolvers = {
   },
 
   Message: {
-    async user(message: MyMessage, _, { models }) {
+    async user(message, _, { models }) {
       return await models.User.findByPk(message.userId);
     },
   },

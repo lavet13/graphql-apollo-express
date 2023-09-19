@@ -5,18 +5,20 @@ import {
   InferAttributes,
   InferCreationAttributes,
   Model,
+  CreationOptional,
 } from 'sequelize';
 
 import { Models } from '.';
+import { UserModel } from './user.models';
 
 export interface RoleModel
   extends Model<
     InferAttributes<RoleModel>,
     InferCreationAttributes<RoleModel>
   > {
-  [key: string]: any;
-  id: string;
+  id: CreationOptional<string>;
   name: string;
+  user: CreationOptional<Partial<UserModel>[]>;
 }
 
 export type Role = ModelStatic<RoleModel> & {
@@ -29,7 +31,6 @@ export default (sequelize: Sequelize) => {
     {
       id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         primaryKey: true,
         autoIncrement: true,
       },

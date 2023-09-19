@@ -9,6 +9,11 @@ const config: CodegenConfig = {
       config: {
         useIndexSignature: true,
         contextType: '../../app#ContextValue',
+        mappers: {
+          Message: '../../db/models/message.models#MessageModel',
+          User: '../../db/models/user.models#UserModel',
+          Role: '../../db/models/role.models#RoleModel',
+        },
       },
     },
   },

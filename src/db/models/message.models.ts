@@ -4,6 +4,7 @@ import {
   InferCreationAttributes,
   Model,
   ModelStatic,
+  CreationOptional,
   Sequelize,
 } from 'sequelize';
 
@@ -16,12 +17,11 @@ export interface MessageModel
     InferAttributes<MessageModel>,
     InferCreationAttributes<MessageModel>
   > {
-  [key: string]: any;
-  id: string;
+  id: CreationOptional<string>;
   text: string;
-  createdAt: Date;
-  updatedAt: Date;
-  user?: any;
+  createdAt: CreationOptional<Date>;
+  updatedAt: CreationOptional<Date>;
+  userId: CreationOptional<string>;
 }
 
 export type Message = ModelStatic<MessageModel> & {
