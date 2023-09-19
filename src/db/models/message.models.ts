@@ -17,6 +17,7 @@ export interface MessageModel
     InferAttributes<MessageModel>,
     InferCreationAttributes<MessageModel>
   > {
+  [key: string]: any;
   id: CreationOptional<string>;
   text: string;
   createdAt: CreationOptional<Date>;

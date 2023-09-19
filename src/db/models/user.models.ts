@@ -33,7 +33,6 @@ export interface UserModel
   updatedAt: CreationOptional<Date>;
 
   messages: CreationOptional<Partial<MessageModel>[]>;
-  addRole: (role: RoleModel) => void;
   generatePasswordHash: () => Promise<string>;
   validatePassword: (password: string) => Promise<boolean>;
 }
