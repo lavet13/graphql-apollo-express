@@ -5,21 +5,43 @@ import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import dateScalars from '../scalars/date.scalars';
-import jwt from 'jsonwebtoken';
+import jwt, { MeJwtPayload } from 'jsonwebtoken';
+import { Models } from '../../db/models';
 
-const createToken = (user: UserModel, secret: string, expiresIn: string) => {
-  const { id, email, username } = user;
-  return jwt.sign({ id, email, username }, secret, { expiresIn });
+import {
+  composeResolvers,
+  ResolversComposerMapping,
+} from '@graphql-tools/resolvers-composition';
+
+import { isAdmin, isAuthenticated } from './authorization';
+
+const createToken = async (
+  user: UserModel,
+  secret: string,
+  expiresIn: string,
+  models: Models
+) => {
+  const { id, email, username, roleId } = user;
+
+  const role = await models.Role.findOne({ where: { id: roleId } });
+
+  if (!role) {
+    throw new GraphQLError('Нет роли у пользователя!', {
+      extensions: { code: 'FORBIDDEN' },
+    });
+  }
+
+  return jwt.sign({ id, email, username, role } as MeJwtPayload, secret, {
+    expiresIn,
+  });
 };
 
-export default {
+const resolvers = {
   Date: dateScalars,
 
   Query: {
     async me(_, __, { me }) {
       return me ? me : null;
-
-      // return await models.User.findByPk(me.id);
     },
 
     async user(_, { id }, { models }) {
@@ -44,7 +66,7 @@ export default {
         roleId: 2,
       });
 
-      return { token: createToken(user, secret, expiresIn) };
+      return { token: await createToken(user, secret, expiresIn, models) };
     },
 
     async signIn(_, { login, password }, { models, secret, expiresIn }) {
@@ -64,7 +86,7 @@ export default {
         });
       }
 
-      return { token: createToken(user, secret, expiresIn) };
+      return { token: await createToken(user, secret, expiresIn, models) };
     },
 
     async deleteUser(_, { id }, { models }) {
@@ -86,10 +108,14 @@ export default {
       });
     },
 
-    async role(user, _, { models }) {
-      return await models.Role.findOne({
-        where: { id: user.roleId },
-      });
+    async roles(user) {
+      return await user.getRoles();
     },
   },
 } as Resolvers;
+
+const resolversComposition: ResolversComposerMapping<Resolvers> = {
+  'Mutation.deleteUser': [isAuthenticated(), isAdmin()],
+};
+
+export default composeResolvers(resolvers, resolversComposition);

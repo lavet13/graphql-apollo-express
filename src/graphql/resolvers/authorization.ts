@@ -50,3 +50,18 @@ export const isMessageOwner =
 
     return next(root, args, context, info);
   };
+
+type IsAdminResolver = GraphQLFieldResolver<{}, ContextValue, any>;
+
+export const isAdmin =
+  (): ResolversComposition<IsAdminResolver> =>
+  next =>
+  (root, args, context, info) => {
+    if (context.me?.role.name !== 'Admin') {
+      throw new GraphQLError('Не авторизован как администратор.', {
+        extensions: { code: 'FORBIDDEN' },
+      });
+    }
+
+    return next(root, args, context, info);
+  };

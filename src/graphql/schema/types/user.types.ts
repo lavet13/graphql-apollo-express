@@ -24,7 +24,7 @@ export default gql`
     id: ID!
     username: String!
     email: String!
-    role: Role!
+    roles: [Role!]
     createdAt: Date!
     updatedAt: Date!
     messages: [Message!]

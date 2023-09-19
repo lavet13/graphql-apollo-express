@@ -10,6 +10,10 @@ declare module 'jsonwebtoken' {
   export interface MeJwtPayload extends JwtPayload {
     id: string;
     username: string;
-    emal: string;
+    email: string;
+    role: {
+      id: string;
+      name: 'Admin' | 'User';
+    };
   }
 }

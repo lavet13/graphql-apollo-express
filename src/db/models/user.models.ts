@@ -22,6 +22,7 @@ export interface UserModel
     InferAttributes<UserModel>,
     InferCreationAttributes<UserModel>
   > {
+  [key: string]: any;
   id: CreationOptional<string>;
   username: string;
   email: string;
@@ -32,7 +33,7 @@ export interface UserModel
   updatedAt: CreationOptional<Date>;
 
   messages: CreationOptional<Partial<MessageModel>[]>;
-  setRole: (role: RoleModel) => void;
+  addRole: (role: RoleModel) => void;
   generatePasswordHash: () => Promise<string>;
   validatePassword: (password: string) => Promise<boolean>;
 }
@@ -160,13 +161,15 @@ export default (sequelize: Sequelize) => {
     }
   };
 
-  User.associate = ({ Message, Role }) => {
+  User.associate = ({ Message, Role, User_Role }) => {
     User.hasMany(Message, {
       onDelete: 'CASCADE',
       foreignKey: { allowNull: false },
     });
 
-    User.belongsTo(Role);
+    User.belongsToMany(Role, {
+      through: { model: User_Role },
+    });
   };
 
   User.findByLogin = async (login: string) => {

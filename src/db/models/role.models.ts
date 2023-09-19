@@ -9,16 +9,15 @@ import {
 } from 'sequelize';
 
 import { Models } from '.';
-import { UserModel } from './user.models';
 
 export interface RoleModel
   extends Model<
     InferAttributes<RoleModel>,
     InferCreationAttributes<RoleModel>
   > {
+  [key: string]: any;
   id: CreationOptional<string>;
   name: string;
-  user: CreationOptional<Partial<UserModel>[]>;
 }
 
 export type Role = ModelStatic<RoleModel> & {
@@ -34,6 +33,7 @@ export default (sequelize: Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
+
       name: {
         type: DataTypes.STRING('50'),
         unique: true,
@@ -42,8 +42,10 @@ export default (sequelize: Sequelize) => {
     { freezeTableName: true, underscored: true, timestamps: false }
   );
 
-  Role.associate = ({ User }) => {
-    Role.hasOne(User);
+  Role.associate = ({ User, User_Role }) => {
+    Role.belongsToMany(User, {
+      through: { model: User_Role },
+    });
   };
 
   return Role;

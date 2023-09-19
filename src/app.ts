@@ -106,7 +106,8 @@ const createUsersWithMessages = async () => {
       { include: [models.Message] }
     );
 
-    firstUser.setRole(adminRole);
+    firstUser.addRole(adminRole);
+    firstUser.addRole(userRole);
 
     const secondUser = await models.User.create(
       {
@@ -121,7 +122,7 @@ const createUsersWithMessages = async () => {
       { include: [models.Message] }
     );
 
-    secondUser.setRole(userRole);
+    secondUser.addRole(userRole);
   } catch (error) {
     console.log({ error });
   }
