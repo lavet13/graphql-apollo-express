@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request } from 'express';
 import cors from 'cors';
 import { json } from 'body-parser';
 import http from 'http';
@@ -18,8 +18,12 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 
 import { Op, Sequelize, Transaction } from 'sequelize';
 
+import jwt, { MeJwtPayload } from 'jsonwebtoken';
+import { GraphQLError } from 'graphql';
+import { UserModel } from './db/models/user.models';
+
 export interface ContextValue {
-  me: User | null;
+  me?: MeJwtPayload;
   models: Models;
   secret: string;
   expiresIn: string;
@@ -69,12 +73,16 @@ async function bootstrap() {
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware<ContextValue>(server, {
-      context: async _ => ({
-        me: await models.User.findByLogin?.('ddavids'),
-        models,
-        secret: import.meta.env.VITE_JWT_SECRET,
-        expiresIn: import.meta.env.VITE_JWT_EXPIRES_IN,
-      }),
+      context: async ({ req }) => {
+        const me = getMe(req);
+
+        return {
+          me,
+          models,
+          secret: import.meta.env.VITE_JWT_SECRET,
+          expiresIn: import.meta.env.VITE_JWT_EXPIRES_IN,
+        };
+      },
     })
   );
 
@@ -397,6 +405,23 @@ const createUsersWithMessages = async () => {
   // } catch (error) {
   //   console.log({ error });
   // }
+};
+
+const getMe = (req: Request) => {
+  const token = req.headers['x-token'];
+
+  if (token) {
+    try {
+      return <jwt.MeJwtPayload>(
+        jwt.verify(token, import.meta.env.VITE_JWT_SECRET)
+      );
+    } catch (error) {
+      throw new GraphQLError(
+        'Срок действия вашего сеанса истек. Войдите в систему еще раз.',
+        { extensions: { code: 'SESSION_EXPIRED' } }
+      );
+    }
+  }
 };
 
 const app = bootstrap();

@@ -1,8 +1,14 @@
 import { Message, Resolvers } from '../__generated/types';
 
+import { isAuthenticated, isMessageOwner } from './authorization';
+import {
+  composeResolvers,
+  ResolversComposerMapping,
+} from '@graphql-tools/resolvers-composition';
+
 type MyMessage = Message & { user_id?: string };
 
-export default {
+const resolvers = {
   Query: {
     async message(_, { id }, { models }) {
       return await models.Message.findByPk(id);
@@ -14,7 +20,7 @@ export default {
   },
 
   Mutation: {
-    async createMessage(_, { text }, { me, models }) {
+    createMessage: async (_, { text }, { me, models }) => {
       return await models.Message.create({
         text,
         user_id: me?.id,
@@ -36,3 +42,11 @@ export default {
     },
   },
 } as Resolvers;
+
+const resolversComposition: ResolversComposerMapping<Resolvers> = {
+  'Mutation.createMessage': isAuthenticated(),
+  'Mutation.deleteMessage': [isAuthenticated(), isMessageOwner()],
+  'Mutation.updateMessage': [isAuthenticated(), isMessageOwner()],
+};
+
+export default composeResolvers(resolvers, resolversComposition);
