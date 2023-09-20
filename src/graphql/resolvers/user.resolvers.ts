@@ -5,8 +5,7 @@ import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import dateScalars from '../scalars/date.scalars';
-import jwt, { MeJwtPayload } from 'jsonwebtoken';
-import { Models } from '../../db/models';
+import jwt from 'jsonwebtoken';
 
 import {
   composeResolvers,
@@ -14,34 +13,43 @@ import {
 } from '@graphql-tools/resolvers-composition';
 
 import { isAdmin, isAuthenticated } from './authorization';
+import { MappedRoleModel } from '../..';
 
 const createToken = async (
   user: UserModel,
   secret: string,
-  expiresIn: string,
-  models: Models
+  expiresIn: string
 ) => {
-  const { id, email, username, roleId } = user;
+  const { id, email, username } = user;
 
-  const role = await models.Role.findOne({ where: { id: roleId } });
+  const roles = (await user.getRoles()) as MappedRoleModel[];
 
-  if (!role) {
-    throw new GraphQLError('Нет роли у пользователя!', {
+  if (roles.length === 0) {
+    throw new GraphQLError('У пользователя нет ролей!', {
       extensions: { code: 'FORBIDDEN' },
     });
   }
 
-  return jwt.sign({ id, email, username, role } as MeJwtPayload, secret, {
+  const payload: jwt.MeJwtPayload = {
+    id,
+    email,
+    username,
+    roles,
+  };
+
+  return jwt.sign(payload, secret, {
     expiresIn,
   });
 };
 
-const resolvers = {
+const resolvers: Resolvers = {
   Date: dateScalars,
 
   Query: {
-    async me(_, __, { me }) {
-      return me ? me : null;
+    async me(_, __, { me, models }) {
+      if (!me) return null;
+
+      return await models.User.findByPk(me.id);
     },
 
     async user(_, { id }, { models }) {
@@ -66,7 +74,7 @@ const resolvers = {
         roleId: 2,
       });
 
-      return { token: await createToken(user, secret, expiresIn, models) };
+      return { token: await createToken(user, secret, expiresIn) };
     },
 
     async signIn(_, { login, password }, { models, secret, expiresIn }) {
@@ -86,7 +94,7 @@ const resolvers = {
         });
       }
 
-      return { token: await createToken(user, secret, expiresIn, models) };
+      return { token: await createToken(user, secret, expiresIn) };
     },
 
     async deleteUser(_, { id }, { models }) {
@@ -109,10 +117,10 @@ const resolvers = {
     },
 
     async roles(user) {
-      return await user.getRoles();
+      return await user.getRoles({ joinTableAttributes: [] });
     },
   },
-} as Resolvers;
+};
 
 const resolversComposition: ResolversComposerMapping<Resolvers> = {
   'Mutation.deleteUser': [isAuthenticated(), isAdmin()],

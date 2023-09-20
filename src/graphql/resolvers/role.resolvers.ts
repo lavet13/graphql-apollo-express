@@ -1,6 +1,6 @@
 import { Resolvers } from '../__generated/types';
 
-export default {
+const resolvers: Resolvers = {
   Query: {
     async roles(_, __, { models }) {
       return await models.Role.findAll();
@@ -9,7 +9,9 @@ export default {
 
   Role: {
     async users(role) {
-      return await role.getUsers();
+      return await role.getUsers({ joinTableAttributes: [] });
     },
   },
-} as Resolvers;
+};
+
+export default resolvers;

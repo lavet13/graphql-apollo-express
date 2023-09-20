@@ -1,15 +1,25 @@
 import { Resolvers } from '../__generated/types';
 
 import { isAuthenticated, isMessageOwner } from './authorization';
+
 import {
   composeResolvers,
   ResolversComposerMapping,
 } from '@graphql-tools/resolvers-composition';
 
-const resolvers = {
+import { GraphQLError } from 'graphql';
+
+const resolvers: Resolvers = {
   Query: {
     async message(_, { id }, { models }) {
-      return await models.Message.findByPk(id);
+      const message = await models.Message.findByPk(id);
+
+      if (!message)
+        throw new GraphQLError('Сообщение не найдено!', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+
+      return message;
     },
 
     async messages(_, __, { models }) {
@@ -36,10 +46,17 @@ const resolvers = {
 
   Message: {
     async user(message, _, { models }) {
-      return await models.User.findByPk(message.userId);
+      const user = await models.User.findByPk(message.userId);
+
+      if (!user)
+        throw new GraphQLError('Пользователь не найден!', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+
+      return user;
     },
   },
-} as Resolvers;
+};
 
 const resolversComposition: ResolversComposerMapping<Resolvers> = {
   'Mutation.createMessage': isAuthenticated(),

@@ -57,7 +57,11 @@ export const isAdmin =
   (): ResolversComposition<IsAdminResolver> =>
   next =>
   (root, args, context, info) => {
-    if (context.me?.role.name !== 'Admin') {
+    if (
+      !context.me?.roles.some(role => {
+        role.name === 'Admin';
+      })
+    ) {
       throw new GraphQLError('Не авторизован как администратор.', {
         extensions: { code: 'FORBIDDEN' },
       });

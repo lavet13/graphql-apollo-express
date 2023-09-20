@@ -14,7 +14,6 @@ import { Models } from '.';
 
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { RoleModel } from './role.models';
 import { MessageModel } from './message.models';
 
 export interface UserModel
@@ -27,7 +26,6 @@ export interface UserModel
   username: string;
   email: string;
   password: string;
-  roleId: CreationOptional<number>;
   // usernameWithId: string;
   createdAt: CreationOptional<Date>;
   updatedAt: CreationOptional<Date>;

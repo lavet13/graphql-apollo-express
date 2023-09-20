@@ -18,12 +18,13 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 
 import { Op, Sequelize, Transaction } from 'sequelize';
 
-import jwt, { MeJwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import { UserModel } from './db/models/user.models';
+import { RoleModel } from './db/models/role.models';
 
 export interface ContextValue {
-  me?: MeJwtPayload;
+  me?: jwt.MeJwtPayload | null;
   models: Models;
   secret: string;
   expiresIn: string;
@@ -106,8 +107,7 @@ const createUsersWithMessages = async () => {
       { include: [models.Message] }
     );
 
-    firstUser.addRole(adminRole);
-    firstUser.addRole(userRole);
+    await firstUser.addRoles([adminRole, userRole]);
 
     const secondUser = await models.User.create(
       {
@@ -122,7 +122,11 @@ const createUsersWithMessages = async () => {
       { include: [models.Message] }
     );
 
-    secondUser.addRole(userRole);
+    await secondUser.addRole(userRole);
+
+    console.log(
+      JSON.stringify(await secondUser.getRoles({ joinTableAttributes: [] }))
+    );
   } catch (error) {
     console.log({ error });
   }
