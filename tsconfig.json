@@ -19,7 +19,12 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* sequelize-typescript */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false /* this option was crucial like deadass im spend almost 2hours LULE */
   },
   "exclude": ["dist", "node_modules"],
   "include": ["src/**/*.ts"]

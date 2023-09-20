@@ -9,19 +9,20 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
-import models, { Models, namespace, sequelize, t } from './db/models';
+import models, { Models, sequelize } from './db/models';
+// import {namespace, t} from './db/models'
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
 
-import { User } from './graphql/__generated/types';
+// import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
-import { Op, Sequelize, Transaction } from 'sequelize';
+// import { Op, Sequelize, Transaction } from 'sequelize';
 
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
-import { UserModel } from './db/models/user.models';
-import { RoleModel } from './db/models/role.models';
+// import { UserModel } from './db/models/user.models';
+// import { RoleModel } from './db/models/role.models';
 
 export interface ContextValue {
   me?: jwt.MeJwtPayload | null;
@@ -70,7 +71,7 @@ async function bootstrap() {
   }
 
   app.use(
-    '/',
+    '/graphql',
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware<ContextValue>(server, {
@@ -86,6 +87,13 @@ async function bootstrap() {
       },
     })
   );
+
+  if (import.meta.env.PROD) {
+    // Modified server startup
+    httpServer.listen(
+      Number.parseInt(import.meta.env.VITE_SERVER_PORT) || 4000
+    );
+  }
 
   return app;
 }
