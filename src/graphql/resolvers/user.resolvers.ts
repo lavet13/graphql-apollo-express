@@ -24,12 +24,6 @@ const createToken = async (
 
   const roles = (await user.getRoles()) as MappedRoleModel[];
 
-  if (roles.length === 0) {
-    throw new GraphQLError('У пользователя нет ролей!', {
-      extensions: { code: 'FORBIDDEN' },
-    });
-  }
-
   const payload: jwt.MeJwtPayload = {
     id,
     email,
@@ -71,8 +65,11 @@ const resolvers: Resolvers = {
         username,
         password,
         email,
-        roleId: 2,
       });
+
+      const userRole = await models.Role.findOne({ where: { name: 'User' } });
+
+      await user.addRole(userRole);
 
       return { token: await createToken(user, secret, expiresIn) };
     },

@@ -128,7 +128,7 @@ export default (sequelize: Sequelize) => {
     }
   );
 
-  User.beforeCreate(async (user, _) => {
+  User.beforeCreate(async user => {
     user.password = await user.generatePasswordHash();
   });
 

@@ -71,7 +71,7 @@ async function bootstrap() {
   }
 
   app.use(
-    '/graphql',
+    '/',
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware<ContextValue>(server, {
