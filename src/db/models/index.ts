@@ -1,14 +1,7 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import cls from 'cls-hooked';
-import UserModel, { User } from './user.models';
-import MessageModel, { Message } from './message.models';
-import ShipModel, { Ship } from './ship.models';
-import CaptainModel, { Captain } from './captain.models';
-import FooModel, { Foo } from './foo.models';
-import BarModel, { Bar } from './bar.models';
-import Foo_BarModel, { Foo_Bar } from './foo_bar.models';
-import RoleModel, { Role } from './role.models';
-import User_RoleModels, { User_Role } from './user_role.models';
+import Message from './message.models';
+import User from './user.models';
 
 export const namespace = cls.createNamespace('my-namespace');
 Sequelize.useCLS(namespace);
@@ -22,40 +15,13 @@ const sequelize = new Sequelize(
   }
 );
 
-export const t = await sequelize.transaction();
+sequelize.addModels([Message, User]);
 
 export type Models = {
-  User: User;
-  Message: Message;
-  Ship: Ship;
-  Captain: Captain;
-  Foo: Foo;
-  Bar: Bar;
-  Foo_Bar: Foo_Bar;
-  Role: Role;
-  User_Role: User_Role;
+  User: typeof User;
+  Message: typeof Message;
 };
 
-const models = {
-  User: UserModel(sequelize),
-  Message: MessageModel(sequelize),
-  Ship: ShipModel(sequelize),
-  Captain: CaptainModel(sequelize),
-  Foo: FooModel(sequelize),
-  Bar: BarModel(sequelize),
-  Foo_Bar: Foo_BarModel(sequelize),
-  Role: RoleModel(sequelize),
-  User_Role: User_RoleModels(sequelize),
-};
+const models = sequelize.models as Models;
 
-(Object.keys(models) as (keyof typeof models)[]).forEach(key => {
-  const model = models[key];
-
-  if (model.associate !== undefined) {
-    model.associate(models);
-  }
-});
-
-export { sequelize };
-
-export default models;
+export { sequelize, models };
