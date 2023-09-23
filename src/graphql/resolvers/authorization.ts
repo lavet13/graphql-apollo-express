@@ -42,8 +42,27 @@ export const isMessageOwner =
       raw: true,
     });
 
-    if (message?.userId !== context.me?.id) {
+    if (message && message?.userId !== context.me?.id) {
       throw new GraphQLError('Не аутентифицирован как владелец.', {
+        extensions: { code: 'FORBIDDEN' },
+      });
+    }
+
+    return next(root, args, context, info);
+  };
+
+type IsAdminResolver = GraphQLFieldResolver<{}, ContextValue, any>;
+
+export const isAdmin =
+  (): ResolversComposition<IsAdminResolver> =>
+  next =>
+  (root, args, context, info) => {
+    if (
+      !context.me?.roles.some(role => {
+        return role.name === 'Admin';
+      })
+    ) {
+      throw new GraphQLError('Не авторизован как администратор.', {
         extensions: { code: 'FORBIDDEN' },
       });
     }

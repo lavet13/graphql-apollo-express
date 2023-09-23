@@ -6,14 +6,24 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import dateScalars from '../scalars/date.scalars';
 import jwt from 'jsonwebtoken';
 import User from '../../db/models/user.models';
+import { MappedRoleModel } from '../..';
+
+import {
+  composeResolvers,
+  ResolversComposerMapping,
+} from '@graphql-tools/resolvers-composition';
+import { isAdmin, isAuthenticated } from './authorization';
 
 const createToken = async (user: User, secret: string, expiresIn: string) => {
   const { id, email, username } = user;
+
+  const roles = (await user.$get('roles')) as MappedRoleModel[];
 
   const payload: jwt.MeJwtPayload = {
     id,
     email,
     username,
+    roles,
   };
 
   return jwt.sign(payload, secret, {
@@ -51,6 +61,16 @@ const resolvers: Resolvers = {
         password,
         email,
       });
+
+      const userRole = await models.Role.findOne({ where: { name: 'User' } });
+
+      if (!userRole) {
+        throw new GraphQLError('Не найдена роль!(User)', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+
+      await user.$add('roles', userRole);
 
       return { token: await createToken(user, secret, expiresIn) };
     },
@@ -90,10 +110,18 @@ const resolvers: Resolvers = {
         where: {
           userId: user.id,
         },
-        order: [['updatedAt', 'DESC']],
+        order: [['id', 'ASC']],
       });
+    },
+
+    async roles(user) {
+      return await user.$get('roles');
     },
   },
 };
 
-export default resolvers;
+const resolversComposition: ResolversComposerMapping<Resolvers> = {
+  'Mutation.deleteUser': [isAuthenticated(), isAdmin()],
+};
+
+export default composeResolvers(resolvers, resolversComposition);

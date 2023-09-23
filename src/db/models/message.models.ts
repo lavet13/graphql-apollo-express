@@ -122,7 +122,11 @@ export default class Message extends Model<
   @Column({ type: DataType.INTEGER })
   declare userId: CreationOptional<number>;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: { allowNull: false },
+  })
   declare user: CreationOptional<User>;
 }
 
