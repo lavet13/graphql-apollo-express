@@ -1,4 +1,3 @@
-import { UserModel } from '../../db/models/user.models';
 import { Resolvers } from '../__generated/types';
 
 import { GraphQLError } from 'graphql';
@@ -6,23 +5,19 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import dateScalars from '../scalars/date.scalars';
 import jwt from 'jsonwebtoken';
+import User from '../../db/models/user.models';
+import { MappedRoleModel } from '../..';
 
 import {
   composeResolvers,
   ResolversComposerMapping,
 } from '@graphql-tools/resolvers-composition';
-
 import { isAdmin, isAuthenticated } from './authorization';
-import { MappedRoleModel } from '../..';
 
-const createToken = async (
-  user: UserModel,
-  secret: string,
-  expiresIn: string
-) => {
+const createToken = async (user: User, secret: string, expiresIn: string) => {
   const { id, email, username } = user;
 
-  const roles = (await user.getRoles()) as MappedRoleModel[];
+  const roles = (await user.$get('roles')) as MappedRoleModel[];
 
   const payload: jwt.MeJwtPayload = {
     id,
@@ -69,13 +64,19 @@ const resolvers: Resolvers = {
 
       const userRole = await models.Role.findOne({ where: { name: 'User' } });
 
-      await user.addRole(userRole);
+      if (!userRole) {
+        throw new GraphQLError('Не найдена роль!(User)', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+
+      await user.$add('roles', userRole);
 
       return { token: await createToken(user, secret, expiresIn) };
     },
 
     async signIn(_, { login, password }, { models, secret, expiresIn }) {
-      const user = (await models.User.findByLogin?.(login)) as UserModel | null;
+      const user = (await models.User.findByLogin?.(login)) as User | null;
 
       if (!user) {
         throw new GraphQLError('Логин не существует', {
@@ -109,12 +110,12 @@ const resolvers: Resolvers = {
         where: {
           userId: user.id,
         },
-        order: [['updatedAt', 'DESC']],
+        order: [['id', 'ASC']],
       });
     },
 
     async roles(user) {
-      return await user.getRoles({ joinTableAttributes: [] });
+      return await user.$get('roles');
     },
   },
 };

@@ -13,7 +13,7 @@ export type MappedRoleModel = {
 
 declare module 'jsonwebtoken' {
   export interface MeJwtPayload extends JwtPayload {
-    id: string;
+    id: number;
     username: string;
     email: string;
     roles: MappedRoleModel[];

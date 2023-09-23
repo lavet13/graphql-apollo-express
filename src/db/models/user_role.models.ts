@@ -1,16 +1,31 @@
-import { ModelStatic, Sequelize } from 'sequelize';
-import { Models } from '.';
+import { InferAttributes, InferCreationAttributes } from 'sequelize';
 
-export type User_Role = ModelStatic<any> & {
-  associate?: (models: Models) => void;
-};
+import {
+  Table,
+  Column,
+  ForeignKey,
+  Model,
+  DataType,
+} from 'sequelize-typescript';
+import User from './user.models';
+import Role from './role.models';
 
-export default (sequelize: Sequelize) => {
-  const User_Role: User_Role = sequelize.define(
-    'user_role',
-    {},
-    { freezeTableName: true, timestamps: false, underscored: true }
-  );
+@Table({
+  freezeTableName: true,
+  modelName: 'UserRole',
+  tableName: 'user_role',
+  timestamps: false,
+  underscored: true,
+})
+export default class UserRole extends Model<
+  InferAttributes<UserRole>,
+  InferCreationAttributes<UserRole>
+> {
+  @ForeignKey(() => User)
+  @Column({ type: DataType.INTEGER, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  declare userId: number;
 
-  return User_Role;
-};
+  @ForeignKey(() => Role)
+  @Column({ type: DataType.INTEGER, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  declare roleId: number;
+}

@@ -9,7 +9,7 @@ const resolvers: Resolvers = {
 
   Role: {
     async users(role) {
-      return await role.getUsers({ joinTableAttributes: [] });
+      return await role.$get('users');
     },
   },
 };

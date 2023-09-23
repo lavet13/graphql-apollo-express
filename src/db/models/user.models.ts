@@ -1,138 +1,102 @@
 import {
-  Sequelize,
-  DataTypes,
-  ModelStatic,
+  Table,
+  Column,
   Model,
+  DataType,
+  HasMany,
+  BelongsToMany,
+} from 'sequelize-typescript';
+
+import {
+  CreationOptional,
   InferAttributes,
   InferCreationAttributes,
-  CreationOptional,
 } from 'sequelize';
 
 import bcrypt from 'bcryptjs';
-
-import { Models } from '.';
-
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { MessageModel } from './message.models';
+import Message from './message.models';
+import UserRole from './user_role.models';
+import Role from './role.models';
 
-export interface UserModel
-  extends Model<
-    InferAttributes<UserModel>,
-    InferCreationAttributes<UserModel>
-  > {
-  [key: string]: any;
-  id: CreationOptional<string>;
-  username: string;
-  email: string;
-  password: string;
-  // usernameWithId: string;
-  createdAt: CreationOptional<Date>;
-  updatedAt: CreationOptional<Date>;
+@Table({
+  modelName: 'User',
+  tableName: 'user',
+  freezeTableName: true,
+  underscored: true,
+  hooks: {
+    beforeCreate: async (user: User) => {
+      user.password = await user.generatePasswordHash();
+    },
+  },
+})
+export default class User extends Model<
+  InferAttributes<User>,
+  InferCreationAttributes<User>
+> {
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
 
-  messages: CreationOptional<Partial<MessageModel>[]>;
-  generatePasswordHash: () => Promise<string>;
-  validatePassword: (password: string) => Promise<boolean>;
-}
-
-export type User = ModelStatic<UserModel> & {
-  associate?: (models: Models) => void;
-  findByLogin?: (login: string) => Promise<any | null>;
-};
-
-export default (sequelize: Sequelize) => {
-  const User: User = sequelize.define(
-    'user',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+    validate: {
+      notNull: {
+        msg: 'Имя пользователя не может быть Null!',
       },
-      username: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-        validate: {
-          notNull: {
-            msg: 'Имя пользователя не может быть Null!',
-          },
-          notEmpty: {
-            msg: 'Имя пользователя не может быть пустым!',
-          },
-          // containsSomething(value: string) {
-          //   if (value.includes('test')) {
-          //     throw new Error('AGAAAAA!!!!!!!!!!');
-          //   }
-          // },
-        },
-        // get() {
-        //   const rawValue = this.getDataValue('username');
-        //   const newValue = rawValue.replace(/!+/i, '');
-        //   return `${newValue.toUpperCase()}: ${this.id}`;
-        // },
-
-        // set(value: string) {
-        //   this.setDataValue('username', value + '!!');
-        // },
-      },
-
-      // usernameWithId: {
-      //   type: DataTypes.VIRTUAL,
-
-      //   get() {
-      //     return `${this.id}: ${this.getDataValue('username')}`;
-      //   },
-
-      //   set(_: string) {
-      //     throw new Error(`Do not try to set the \`usernameWithId\` value!`);
-      //   },
-      // },
-
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-          notEmpty: {
-            msg: 'E-mail не может быть пустым!',
-          },
-          isEmail: {
-            msg: 'Неверный формат E-mail',
-          },
-        },
-      },
-
-      password: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-        validate: {
-          notNull: {
-            msg: 'Пароль не может быть Null',
-          },
-
-          notEmpty: {
-            msg: 'Пароль не может быть пуст!',
-          },
-
-          len: {
-            args: [7, 42],
-            msg: 'Пароль пользователя должен содержать от 7 до 42 символов',
-          },
-        },
+      notEmpty: {
+        msg: 'Имя пользователя не может быть пустым!',
       },
     },
-    {
-      freezeTableName: true,
-      underscored: true,
-    }
-  );
+  })
+  declare username: string;
 
-  User.beforeCreate(async user => {
-    user.password = await user.generatePasswordHash();
-  });
+  @Column({
+    type: DataType.STRING,
+    unique: true,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'E-mail не может быть Null!' },
+      notEmpty: { msg: 'E-mail не может быть пустым!' },
 
-  User.prototype.validatePassword = async function (password: string) {
+      isEmail: {
+        msg: 'Неверный формат E-mail',
+      },
+    },
+  })
+  declare email: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+    validate: {
+      notNull: {
+        msg: 'Пароль не может быть Null',
+      },
+
+      notEmpty: {
+        msg: 'Пароль не может быть пуст!',
+      },
+
+      len: {
+        args: [7, 42],
+        msg: 'Пароль пользователя должен содержать от 7 до 42 символов',
+      },
+    },
+  })
+  declare password: string;
+
+  @HasMany(() => Message, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: { allowNull: false },
+  })
+  messages: CreationOptional<Message[]>;
+
+  @BelongsToMany(() => Role, () => UserRole)
+  roles: CreationOptional<Role[]>;
+
+  async validatePassword(password: string) {
     try {
       return await bcrypt.compare(password, this.password);
     } catch (error) {
@@ -142,9 +106,9 @@ export default (sequelize: Sequelize) => {
         extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
       });
     }
-  };
+  }
 
-  User.prototype.generatePasswordHash = async function () {
+  async generatePasswordHash() {
     const saltRounds = 10;
 
     try {
@@ -156,20 +120,9 @@ export default (sequelize: Sequelize) => {
         extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
       });
     }
-  };
+  }
 
-  User.associate = ({ Message, Role, User_Role }) => {
-    User.hasMany(Message, {
-      onDelete: 'CASCADE',
-      foreignKey: { allowNull: false },
-    });
-
-    User.belongsToMany(Role, {
-      through: { model: User_Role },
-    });
-  };
-
-  User.findByLogin = async (login: string) => {
+  static async findByLogin(login: string) {
     let user = await User.findOne({
       where: { username: login },
     });
@@ -181,7 +134,7 @@ export default (sequelize: Sequelize) => {
     }
 
     return user;
-  };
+  }
+}
 
-  return User;
-};
+export type UserModel = User;

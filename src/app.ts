@@ -9,20 +9,14 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
-import models, { Models, sequelize } from './db/models';
-// import {namespace, t} from './db/models'
+import { Models, sequelize, models } from './db/models';
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
 
-// import { User } from './graphql/__generated/types';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-
-// import { Op, Sequelize, Transaction } from 'sequelize';
 
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
-// import { UserModel } from './db/models/user.models';
-// import { RoleModel } from './db/models/role.models';
 
 export interface ContextValue {
   me?: jwt.MeJwtPayload | null;
@@ -105,326 +99,29 @@ const createUsersWithMessages = async () => {
     const adminRole = await models.Role.create({ name: 'Admin' });
     const userRole = await models.Role.create({ name: 'User' });
 
-    const firstUser = await models.User.create(
-      {
-        username: 'rwieruch',
-        email: 'rwieruch@gmail.com',
-        password: 'password',
-        messages: [{ text: 'Published the Road to learn React' }],
-      },
-      { include: [models.Message] }
-    );
+    const firstUser = await models.User.create({
+      username: 'rwieruch',
+      email: 'rwieruch@gmail.com',
+      password: 'password',
+    });
 
-    await firstUser.addRoles([adminRole, userRole]);
+    await firstUser.$add('roles', [adminRole, userRole]);
 
-    const secondUser = await models.User.create(
-      {
-        username: 'ddavids',
-        email: 'ddavids@gmail.com',
-        password: 'password',
-        messages: [
-          { text: 'Happy to release . . .' },
-          { text: 'Published a complete . . .' },
-        ],
-      },
-      { include: [models.Message] }
-    );
+    const secondUser = await models.User.create({
+      username: 'ddavids',
+      email: 'ddavids@gmail.com',
+      password: 'password',
+    });
 
-    await secondUser.addRole(userRole);
+    await secondUser.$add('roles', userRole);
 
-    console.log(
-      JSON.stringify(await secondUser.getRoles({ joinTableAttributes: [] }))
-    );
+    await models.Message.bulkCreate([
+      { text: 'Happy to realese . . .', userId: firstUser.id },
+      { text: 'Published a complete . . .', userId: secondUser.id },
+    ]);
   } catch (error) {
     console.log({ error });
   }
-
-  await models.Captain.create(
-    { name: 'Jack Sparrow', ship: [{ name: "this is jack's ship tho :D" }] },
-    { include: [models.Ship] }
-  );
-
-  await models.Foo.create(
-    {
-      name: 'just a name',
-      bars: [{ title: 'just a title' }],
-    },
-    { include: [models.Bar] }
-  );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.findAll({
-  //       attributes: ['id', 'text'],
-  //       where: {
-  //         id: {
-  //           [Op.notIn]: [1, 2],
-  //         },
-  //       },
-  //       include: [
-  //         {
-  //           model: models.User,
-  //         },
-  //       ],
-  //     })
-  //   )
-  // );
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Foo.findAll({
-  //       include: [
-  //         {
-  //           model: models.Bar,
-  //           through: {
-  //             attributes: [],
-  //           },
-  //         },
-  //       ],
-  //       order: [[models.Bar, 'id', 'DESC']],
-  //     })
-  //   )
-  // );
-
-  // const [Foo, FooIsCreated] = await models.Foo.findOrCreate({
-  //   where: {
-  //     name: 'just a name :DDDDD',
-  //   },
-  //   defaults: {
-  //     name: 'LULE',
-  //   },
-  // });
-
-  // if (FooIsCreated) {
-  //   console.log(JSON.stringify(Foo));
-  // }
-
-  // const { count, rows } = await models.Message.findAndCountAll({
-  // where: {
-  //   text: {
-  //     [Op.like]: 'P%',
-  //   },
-  // },
-
-  //   limit: 3,
-  //   offset: 0,
-  // });
-
-  // console.log(count, JSON.stringify(rows));
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.User.create(
-  //       { username: 'ivan' },
-  //       { fields: ['id', 'updated_at', 'created_at'] }
-  //     )
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.User.findAll({
-  //       attributes: [
-  //         ['id', 'user_id'],
-  //         [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-  //         'username',
-  //       ],
-  //       group: 'id',
-  //     })
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.findAll({
-  //       where: {
-  //         [Op.and]: [
-  //           {
-  //             user_id: {
-  //               [Op.or]: [1, 2],
-  //             },
-  //           },
-  //           {
-  //             text: {
-  //               [Op.like]: 'P%',
-  //             },
-  //           },
-  //         ],
-  //       },
-  //     })
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.findAll({
-  //       where: {
-  //         [Op.not]: {
-  //           [Op.or]: [
-  //             {
-  //               text: {
-  //                 [Op.like]: 'P%',
-  //               },
-  //             },
-  //             {
-  //               user_id: 1,
-  //             },
-  //           ],
-  //         },
-  //       },
-  //     })
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.findAll({
-  //       where: {
-  //         [Op.and]: [
-  //           sequelize.where(
-  //             sequelize.fn('char_length', sequelize.col('text')),
-  //             { [Op.lt]: 30 }
-  //           ),
-  //           {
-  //             text: {
-  //               [Op.notLike]: 'P%',
-  //             },
-  //           },
-  //         ],
-  //       },
-  //     })
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.update(
-  //       { text: 'updated text' },
-  //       {
-  //         where: {
-  //           user_id: 2,
-  //         },
-  //       }
-  //     )
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.destroy({
-  //       where: {
-  //         text: {
-  //           [Op.like]: 'P%',
-  //         },
-  //       },
-  //     })
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.destroy({
-  //       truncate: true,
-  //     })
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Captain.bulkCreate(
-  //       [{ name: 'Glad Valakas' }, { name: 'Davy Jones' }],
-  //       { validate: true, fields: ['name'] }
-  //     )
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(
-  //     await models.Message.findAll({
-  //       attributes: ['id', 'text'],
-  //       order: [
-  //         [sequelize.fn('max', sequelize.col('message.created_at')), 'DESC'],
-  //         [models.User, 'updated_at', 'DESC'],
-  //       ],
-  //       group: [sequelize.col('message.id'), sequelize.col('user.id')],
-  //       include: [
-  //         {
-  //           model: models.User,
-  //           required: true,
-  //           attributes: ['id', 'username'],
-  //         },
-  //       ],
-  //     })
-  //   )
-  // );
-
-  // Unmanaged transaction
-  // try {
-  //   const user = await models.User.create(
-  //     {
-  //       username: 'ivan',
-  //     },
-  //     { transaction: t }
-  //   );
-
-  //   const message = await user.createMessage(
-  //     { text: 'just a text message' },
-  //     { transaction: t }
-  //   );
-
-  //   console.log(JSON.stringify(user));
-  //   console.log(JSON.stringify(message));
-
-  //   await t.commit();
-  // } catch (error) {
-  //   await t.rollback();
-  // }
-
-  // Managed transaction
-  // try {
-  //   const result = await sequelize.transaction(
-  //     { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
-  //     async t => {
-  //       t.afterCommit(() => {
-  //         console.log('after commit :D');
-  //       });
-  //       console.log(namespace.get('transaction') === t);
-
-  //       const user = await models.User.create({
-  //         username: 'Ivan',
-  //       });
-
-  //       const message = await user.createMessage({ text: 'my first message' });
-
-  //       return { user, message };
-  //     }
-  //   );
-
-  //   console.log(JSON.stringify(result));
-  // } catch (error) {
-  //   console.error(error);
-  // }
-
-  // Testing validations
-  // try {
-  //   const user = await models.User.create({ username: 'ivan' });
-  //   console.log(JSON.stringify(user));
-  //   console.log(user.username); // from getter function
-  //   console.log(user.getDataValue('username')); // from database
-  //   console.log(user.usernameWithId);
-
-  //   const message = await models.Message.create({
-  //     text: 'FORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSENFORSEN',
-  //     user_id: user.getDataValue('id'),
-  //   });
-
-  //   console.log(message.text); // from get()
-  //   console.log(message.getDataValue('text')); // from db
-
-  //   const testUser = await models.User.create({ username: 'test' });
-  //   console.log(JSON.stringify(testUser));
-  // } catch (error) {
-  //   console.log({ error });
-  // }
 };
 
 const getMe = (req: Request) => {
