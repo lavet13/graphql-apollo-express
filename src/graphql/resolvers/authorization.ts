@@ -42,7 +42,7 @@ export const isMessageOwner =
       raw: true,
     });
 
-    if (message && message?.userId !== context.me?.id) {
+    if (message && message?.senderId !== context.me?.id) {
       throw new GraphQLError('Не аутентифицирован как владелец.', {
         extensions: { code: 'FORBIDDEN' },
       });

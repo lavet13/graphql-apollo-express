@@ -105,13 +105,12 @@ const resolvers: Resolvers = {
   },
 
   User: {
-    async messages(user, _, { models }) {
-      return await models.Message.findAll({
-        where: {
-          userId: user.id,
-        },
-        order: [['id', 'ASC']],
-      });
+    async senderMessages(user) {
+      return await user.$get('senderMessages', { order: [['id', 'ASC']] });
+    },
+
+    async receiverMessages(user) {
+      return await user.$get('receiverMessages', { order: [['id', 'ASC']] });
     },
 
     async roles(user) {

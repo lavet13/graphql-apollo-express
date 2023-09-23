@@ -28,10 +28,11 @@ const resolvers: Resolvers = {
   },
 
   Mutation: {
-    async createMessage(_, { text }, { me, models }) {
+    async createMessage(_, { text, receiverId }, { me, models }) {
       return await models.Message.create({
         text,
-        userId: me?.id,
+        senderId: me?.id,
+        receiverId,
       });
     },
 
@@ -45,15 +46,28 @@ const resolvers: Resolvers = {
   },
 
   Message: {
-    async user(message, _, { models }) {
-      const user = await models.User.findByPk(message.userId);
+    async sender(message) {
+      const sender = await message.$get('sender');
 
-      if (!user)
-        throw new GraphQLError('Пользователь не найден!', {
+      if (!sender) {
+        throw new GraphQLError('Отправитель не найден!', {
           extensions: { code: 'FORBIDDEN' },
         });
+      }
 
-      return user;
+      return sender;
+    },
+
+    async receiver(message) {
+      const receiver = await message.$get('receiver');
+
+      if (!receiver) {
+        throw new GraphQLError('Получатель не найден!', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+
+      return receiver;
     },
   },
 };

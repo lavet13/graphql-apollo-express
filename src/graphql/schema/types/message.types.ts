@@ -7,8 +7,8 @@ export default gql`
   }
 
   type Mutation {
-    createMessage(text: String!): Message!
-    deleteMessage(id: ID!): Boolean
+    createMessage(text: String!, receiverId: ID!): Message!
+    deleteMessage(id: ID!): Boolean!
     updateMessage(id: ID!, text: String!): [Int!]
   }
 
@@ -17,6 +17,7 @@ export default gql`
     text: String!
     createdAt: Date!
     updatedAt: Date!
-    user: User!
+    receiver: User!
+    sender: User!
   }
 `;

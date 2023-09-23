@@ -120,14 +120,25 @@ export default class Message extends Model<
 
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER })
-  declare userId: CreationOptional<number>;
+  declare senderId: CreationOptional<string>;
+
+  @ForeignKey(() => User)
+  @Column({ type: DataType.INTEGER })
+  declare receiverId: CreationOptional<string>;
 
   @BelongsTo(() => User, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    foreignKey: { allowNull: false },
+    foreignKey: { allowNull: false, name: 'senderId' },
   })
-  declare user: CreationOptional<User>;
+  declare sender: CreationOptional<User>;
+
+  @BelongsTo(() => User, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: { allowNull: false, name: 'receiverId' },
+  })
+  declare receiver: CreationOptional<User>;
 }
 
 export type MessageModel = Message;

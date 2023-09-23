@@ -27,6 +27,7 @@ export default gql`
     roles: [Role!]
     createdAt: Date!
     updatedAt: Date!
-    messages: [Message!]
+    receiverMessages: [Message!]
+    senderMessages: [Message!]
   }
 `;

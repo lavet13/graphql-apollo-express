@@ -115,12 +115,23 @@ const createUsersWithMessages = async () => {
 
     await secondUser.$add('roles', userRole);
 
-    await models.Message.bulkCreate([
-      { text: 'Happy to realese . . .', userId: firstUser.id },
-      { text: 'Published a complete . . .', userId: secondUser.id },
+    const [firstMessage, secondMessage] = await models.Message.bulkCreate([
+      {
+        text: 'Happy to realese . . .',
+        senderId: firstUser.id,
+        receiverId: secondUser.id,
+      },
+      {
+        text: 'Published a complete . . .',
+        senderId: secondUser.id,
+        receiverId: firstUser.id,
+      },
     ]);
+
+    console.log(JSON.stringify(await firstMessage.$get('sender')));
+    console.log(JSON.stringify(await secondMessage.$get('sender')));
   } catch (error) {
-    console.log({ error });
+    console.log({ initial: error });
   }
 };
 

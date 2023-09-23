@@ -89,9 +89,16 @@ export default class User extends Model<
   @HasMany(() => Message, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    foreignKey: { allowNull: false },
+    foreignKey: { allowNull: false, name: 'senderId' },
   })
-  messages: CreationOptional<Message[]>;
+  senderMessages: CreationOptional<Message[]>;
+
+  @HasMany(() => Message, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: { allowNull: false, name: 'receiverId' },
+  })
+  receiverMessages: CreationOptional<Message[]>;
 
   @BelongsToMany(() => Role, () => UserRole)
   roles: CreationOptional<Role[]>;
