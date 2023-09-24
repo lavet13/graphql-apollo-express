@@ -1,3 +1,5 @@
+import { Op } from 'sequelize';
+
 import { Resolvers } from '../__generated/types';
 
 import { isAuthenticated, isMessageOwner } from './authorization';
@@ -7,7 +9,14 @@ import {
   ResolversComposerMapping,
 } from '@graphql-tools/resolvers-composition';
 
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+
 import { GraphQLError } from 'graphql';
+
+const toCursorHash = (string: string) => Buffer.from(string).toString('base64');
+
+const fromCursorHash = (string: string) =>
+  Buffer.from(string, 'base64').toString('ascii');
 
 const resolvers: Resolvers = {
   Query: {
@@ -22,8 +31,46 @@ const resolvers: Resolvers = {
       return message;
     },
 
-    async messages(_, __, { models }) {
-      return await models.Message.findAll();
+    async messages(_, { after, first }, { models }) {
+      const limit = first ?? 25;
+
+      const { count: totalCount, rows: messages } =
+        await models.Message.findAndCountAll({
+          order: [['createdAt', 'DESC']],
+          limit: limit + 1,
+          where: after
+            ? {
+                createdAt: { [Op.lt]: fromCursorHash(after) },
+              }
+            : {},
+        });
+
+      if (messages.length === 0) {
+        throw new GraphQLError('Out of range!', {
+          extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
+        });
+      }
+
+      const messagesWithCursors = messages.map(message => ({
+        cursor: toCursorHash(message.createdAt.toString()),
+        node: message,
+      }));
+
+      const hasNextPage = messagesWithCursors.length > limit;
+      const edges = hasNextPage
+        ? messagesWithCursors.slice(0, -1)
+        : messagesWithCursors;
+
+      return {
+        totalCount,
+        edges,
+        pageInfo: {
+          endCursor: toCursorHash(
+            edges[edges.length - 1].node.createdAt.toString()
+          ),
+          hasNextPage,
+        },
+      };
     },
   },
 

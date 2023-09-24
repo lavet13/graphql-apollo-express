@@ -2,8 +2,24 @@ import gql from 'graphql-tag';
 
 export default gql`
   type Query {
-    messages: [Message!]!
+    messages(first: Int, after: String): MessageConnection!
     message(id: ID!): Message!
+  }
+
+  type MessageConnection {
+    totalCount: Int!
+    edges: [MessageEdge!]!
+    pageInfo: PageInfo!
+  }
+
+  type MessageEdge {
+    cursor: String!
+    node: Message!
+  }
+
+  type PageInfo {
+    endCursor: String!
+    hasNextPage: Boolean!
   }
 
   type Mutation {

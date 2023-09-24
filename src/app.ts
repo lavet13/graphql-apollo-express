@@ -61,7 +61,7 @@ async function bootstrap() {
   await sequelize.sync({ force: eraseDatabaseOnSync });
 
   if (eraseDatabaseOnSync) {
-    createUsersWithMessages();
+    createUsersWithMessages(new Date());
   }
 
   app.use(
@@ -94,7 +94,7 @@ async function bootstrap() {
 
 // Sequelize automatically pluralizes the model name and uses that as the table name.
 // this pluralization is done under the hood by a library: https://www.npmjs.com/package/inflection
-const createUsersWithMessages = async () => {
+const createUsersWithMessages = async (date: Date) => {
   try {
     const adminRole = await models.Role.create({ name: 'Admin' });
     const userRole = await models.Role.create({ name: 'User' });
@@ -115,21 +115,26 @@ const createUsersWithMessages = async () => {
 
     await secondUser.$add('roles', userRole);
 
-    const [firstMessage, secondMessage] = await models.Message.bulkCreate([
+    await models.Message.bulkCreate([
       {
-        text: 'Happy to realese . . .',
+        text: 'LULE',
+        senderId: secondUser.id,
+        receiverId: firstUser.id,
+        createdAt: date.setSeconds(date.getSeconds() + 1),
+      },
+      {
+        text: 'Happy to release . . .',
         senderId: firstUser.id,
         receiverId: secondUser.id,
+        createdAt: date.setSeconds(date.getSeconds() + 1),
       },
       {
         text: 'Published a complete . . .',
         senderId: secondUser.id,
         receiverId: firstUser.id,
+        createdAt: date.setSeconds(date.getSeconds() + 1),
       },
     ]);
-
-    console.log(JSON.stringify(await firstMessage.$get('sender')));
-    console.log(JSON.stringify(await secondMessage.$get('sender')));
   } catch (error) {
     console.log({ initial: error });
   }

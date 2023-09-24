@@ -118,6 +118,9 @@ export default class Message extends Model<
     this.setDataValue('text', gzippedBuffer.toString('base64'));
   }
 
+  @Column({ type: DataType.DATE })
+  declare createdAt: CreationOptional<Date | number>;
+
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER })
   declare senderId: CreationOptional<string>;

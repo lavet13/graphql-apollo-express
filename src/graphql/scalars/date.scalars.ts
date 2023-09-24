@@ -1,7 +1,6 @@
 import { GraphQLScalarType, GraphQLError, Kind } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { intlFormat } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { formatISO } from 'date-fns';
 
 export default new GraphQLScalarType({
   name: 'Date',
@@ -9,18 +8,7 @@ export default new GraphQLScalarType({
   serialize(value) {
     // value sent to the client
     if (value instanceof Date) {
-      return intlFormat(
-        value,
-        {
-          month: '2-digit',
-          year: 'numeric',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        },
-        { locale: ru.code }
-      );
+      return formatISO(value);
     }
 
     throw new GraphQLError(

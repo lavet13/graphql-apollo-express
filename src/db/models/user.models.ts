@@ -91,17 +91,17 @@ export default class User extends Model<
     onUpdate: 'CASCADE',
     foreignKey: { allowNull: false, name: 'senderId' },
   })
-  senderMessages: CreationOptional<Message[]>;
+  declare senderMessages: CreationOptional<Message[]>;
 
   @HasMany(() => Message, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     foreignKey: { allowNull: false, name: 'receiverId' },
   })
-  receiverMessages: CreationOptional<Message[]>;
+  declare receiverMessages: CreationOptional<Message[]>;
 
   @BelongsToMany(() => Role, () => UserRole)
-  roles: CreationOptional<Role[]>;
+  declare roles: CreationOptional<Role[]>;
 
   async validatePassword(password: string) {
     try {

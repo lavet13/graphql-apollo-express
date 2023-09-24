@@ -33,7 +33,7 @@ export default class Role extends Model<
   declare name: string;
 
   @BelongsToMany(() => User, () => UserRole)
-  users: CreationOptional<User[]>;
+  declare users: CreationOptional<User[]>;
 }
 
 export type RoleModel = Role;
