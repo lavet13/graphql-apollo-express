@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Order } from 'sequelize';
 
 import { Resolvers } from '../__generated/types';
 
@@ -13,10 +13,13 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import { GraphQLError } from 'graphql';
 
-const toCursorHash = (string: string) => Buffer.from(string).toString('base64');
+const DEFAULT_PAGE_SIZE = 15;
+
+const toCursorHash = (string: string) =>
+  Buffer.from(string, 'utf-8').toString('base64');
 
 const fromCursorHash = (string: string) =>
-  Buffer.from(string, 'base64').toString('ascii');
+  Buffer.from(string, 'base64').toString('utf-8');
 
 const resolvers: Resolvers = {
   Query: {
@@ -31,47 +34,195 @@ const resolvers: Resolvers = {
       return message;
     },
 
-    async messages(_, { after, first }, { models }) {
-      const limit = first ?? 25;
-
-      const { count: totalCount, rows: messages } =
-        await models.Message.findAndCountAll({
-          order: [['createdAt', 'DESC']],
-          limit: limit + 1,
-          where: after
-            ? {
-                createdAt: { [Op.lt]: fromCursorHash(after) },
-              }
-            : {},
-        });
-
-      if (messages.length === 0) {
-        throw new GraphQLError('Out of range!', {
-          extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
-        });
+    async messages(_, { after, before, first, last }, { models }) {
+      if (Number.isFinite(first) && Number.isFinite(last)) {
+        throw new GraphQLError(
+          'Cannot use both first and last, discouraged by spec!',
+          {
+            extensions: { code: ApolloServerErrorCode.BAD_REQUEST },
+          }
+        );
       }
 
-      const messagesWithCursors = messages.map(message => ({
+      if (Number.isFinite(first) && (first as number) < 0) {
+        throw new GraphQLError('first must be a non-negative integer.');
+      }
+
+      if (Number.isFinite(last) && (last as number) < 0) {
+        throw new GraphQLError('last must be a non-negative integer.');
+      }
+
+      let where = {};
+      const order: Order = [['createdAt', 'DESC']];
+      let limit = first || last || DEFAULT_PAGE_SIZE;
+
+      if (after) {
+        const afterCursor = fromCursorHash(after);
+
+        where = {
+          createdAt: {
+            [Op.lt]: afterCursor,
+          },
+        };
+      }
+
+      if (before) {
+        const beforeCursor = fromCursorHash(before);
+
+        if (!after) {
+          // If before is specified without after, return messages before the cursor
+          where = {
+            createdAt: {
+              [Op.gt]: beforeCursor,
+            },
+          };
+        } else {
+          // If both before and after are specified, return messages between them
+          where = {
+            createdAt: {
+              [Op.between]: [beforeCursor, where.createdAt[Op.lt]],
+            },
+          };
+        }
+      }
+
+      if (last) {
+        order[0][1] = 'ASC';
+      }
+
+      const messages = await models.Message.findAll({
+        where,
+        order,
+        limit: limit + 1,
+      });
+
+      const edges = messages?.map(message => ({
         cursor: toCursorHash(message.createdAt.toString()),
         node: message,
       }));
 
-      const hasNextPage = messagesWithCursors.length > limit;
-      const edges = hasNextPage
-        ? messagesWithCursors.slice(0, -1)
-        : messagesWithCursors;
+      let hasNextPage = false;
+      let hasPreviousPage = false;
+
+      if (messages.length > limit) {
+        if (last) {
+          // If using last, remove the extra message from the beginning
+          edges.shift();
+        } else {
+          // If using first, remove the extra message from the end
+          edges.pop();
+        }
+        hasNextPage = true;
+      }
+
+      if (after && messages.length > 0) {
+        hasPreviousPage = true;
+      }
+
+      const totalCount = await models.Message.count();
+
+      const startCursor = edges?.length > 0 ? edges[0]?.cursor : null;
+      const endCursor =
+        edges?.length > 0 ? edges[edges?.length - 1]?.cursor : null;
 
       return {
         totalCount,
         edges,
         pageInfo: {
-          endCursor: toCursorHash(
-            edges[edges.length - 1].node.createdAt.toString()
-          ),
+          startCursor,
+          endCursor,
           hasNextPage,
+          hasPreviousPage,
         },
       };
     },
+
+    // async messages(_, { after, before, first, last }, { models }) {
+    //   if (Number.isFinite(first) && Number.isFinite(last)) {
+    //     throw new GraphQLError(
+    //       'Cannot use both first and last, discouraged by spec!',
+    //       {
+    //         extensions: { code: ApolloServerErrorCode.BAD_REQUEST },
+    //       }
+    //     );
+    //   }
+
+    //   if (Number.isFinite(first) && (first as number) < 0) {
+    //     throw new GraphQLError('first must be a non-negative integer.');
+    //   }
+
+    //   if (Number.isFinite(last) && (last as number) < 0) {
+    //     throw new GraphQLError('first must be a non-negative integer.');
+    //   }
+
+    //   let where = {};
+    //   const order: Order = [['createdAt', 'DESC']];
+    //   let limit = first || last || DEFAULT_PAGE_SIZE;
+
+    //   if (after) {
+    //     const afterCursor = fromCursorHash(after);
+
+    //     where = {
+    //       createdAt: {
+    //         [Op.lt]: afterCursor,
+    //       },
+    //     };
+    //   }
+
+    //   if (before) {
+    //     const beforeCursor = fromCursorHash(before);
+    //     where = {
+    //       createdAt: {
+    //         [Op.gt]: beforeCursor,
+    //       },
+    //     };
+    //   }
+
+    //   if (last) {
+    //     order[0][1] = 'ASC';
+    //     limit = last;
+    //   }
+
+    //   const messages = await models.Message.findAll({
+    //     where,
+    //     order,
+    //     limit: limit + 1,
+    //   });
+
+    //   const edges = messages?.map(message => ({
+    //     cursor: toCursorHash(message.createdAt.toString()),
+    //     node: message,
+    //   }));
+
+    //   let hasNextPage = false;
+    //   let hasPreviousPage = false;
+
+    //   if (messages.length > limit) {
+    //     hasNextPage = true;
+    //     edges.pop();
+    //   }
+
+    //   if (after && messages.length > 0) {
+    //     hasPreviousPage = true;
+    //   }
+
+    //   const totalCount = await models.Message.count();
+
+    //   const startCursor = edges?.length > 0 ? edges[0]?.cursor : null;
+    //   const endCursor =
+    //     edges?.length > 0 ? edges[edges?.length - 1]?.cursor : null;
+
+    //   return {
+    //     totalCount,
+    //     edges,
+    //     pageInfo: {
+    //       startCursor,
+    //       endCursor,
+    //       hasNextPage,
+    //       hasPreviousPage,
+    //     },
+    //   };
+    // },
   },
 
   Mutation: {

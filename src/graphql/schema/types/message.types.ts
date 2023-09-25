@@ -2,7 +2,12 @@ import gql from 'graphql-tag';
 
 export default gql`
   type Query {
-    messages(first: Int, after: String): MessageConnection!
+    messages(
+      first: Int
+      after: String
+      last: Int
+      before: String
+    ): MessageConnection!
     message(id: ID!): Message!
   }
 
@@ -18,7 +23,9 @@ export default gql`
   }
 
   type PageInfo {
-    endCursor: String!
+    startCursor: String
+    endCursor: String
+    hasPreviousPage: Boolean!
     hasNextPage: Boolean!
   }
 
