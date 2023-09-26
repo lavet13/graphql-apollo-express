@@ -134,6 +134,18 @@ const createUsersWithMessages = async (date: Date) => {
         receiverId: firstUser.id,
         createdAt: date.setSeconds(date.getSeconds() + 1),
       },
+      {
+        text: 'Published a complete . . .',
+        senderId: secondUser.id,
+        receiverId: firstUser.id,
+        createdAt: date.setSeconds(date.getSeconds() + 1),
+      },
+      {
+        text: 'Published a complete . . .',
+        senderId: secondUser.id,
+        receiverId: firstUser.id,
+        createdAt: date.setSeconds(date.getSeconds() + 1),
+      },
     ]);
   } catch (error) {
     console.log({ initial: error });

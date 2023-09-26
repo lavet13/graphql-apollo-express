@@ -41,22 +41,11 @@ const resolvers: Resolvers = {
         });
       }
 
-      let where = {};
-      const order: Order = [['createdAt', 'DESC']];
-      let limit = first || DEFAULT_PAGE_SIZE;
-
-      if (after) {
-        const afterCursor = fromCursorHash(after);
-        where = {
-          createdAt: {
-            [Op.lt]: afterCursor,
-          },
-        };
-      }
+      const limit = first || DEFAULT_PAGE_SIZE;
 
       const messages = await models.Message.findAll({
-        where,
-        order,
+        where: after ? { createdAt: { [Op.lt]: fromCursorHash(after) } } : {},
+        order: [['createdAt', 'DESC']],
         limit: limit + 1, // Fetch one extra to check for hasNextPage
       });
 
@@ -67,7 +56,7 @@ const resolvers: Resolvers = {
 
       let hasNextPage = false;
 
-      if (messages.length > limit) {
+      if (edges.length > limit) {
         // If there are more items than the 'limit', there is a next page
         hasNextPage = true;
         edges.pop(); // Remove the extra item fetched to check hasNextPage
