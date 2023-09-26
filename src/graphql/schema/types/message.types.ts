@@ -25,7 +25,6 @@ export default gql`
   type PageInfo {
     startCursor: String
     endCursor: String
-    hasPreviousPage: Boolean!
     hasNextPage: Boolean!
   }
 

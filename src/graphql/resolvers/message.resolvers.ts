@@ -34,31 +34,19 @@ const resolvers: Resolvers = {
       return message;
     },
 
-    async messages(_, { after, before, first, last }, { models }) {
-      if (Number.isFinite(first) && Number.isFinite(last)) {
-        throw new GraphQLError(
-          'Cannot use both first and last, discouraged by spec!',
-          {
-            extensions: { code: ApolloServerErrorCode.BAD_REQUEST },
-          }
-        );
-      }
-
+    async messages(_, { after, first }, { models }) {
       if (Number.isFinite(first) && (first as number) < 0) {
-        throw new GraphQLError('first must be a non-negative integer.');
-      }
-
-      if (Number.isFinite(last) && (last as number) < 0) {
-        throw new GraphQLError('last must be a non-negative integer.');
+        throw new GraphQLError('first must be a non-negative integer.', {
+          extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
+        });
       }
 
       let where = {};
       const order: Order = [['createdAt', 'DESC']];
-      let limit = first || last || DEFAULT_PAGE_SIZE;
+      let limit = first || DEFAULT_PAGE_SIZE;
 
       if (after) {
         const afterCursor = fromCursorHash(after);
-
         where = {
           createdAt: {
             [Op.lt]: afterCursor,
@@ -66,163 +54,35 @@ const resolvers: Resolvers = {
         };
       }
 
-      if (before) {
-        const beforeCursor = fromCursorHash(before);
-
-        if (!after) {
-          // If before is specified without after, return messages before the cursor
-          where = {
-            createdAt: {
-              [Op.gt]: beforeCursor,
-            },
-          };
-        } else {
-          // If both before and after are specified, return messages between them
-          where = {
-            createdAt: {
-              [Op.between]: [beforeCursor, where.createdAt[Op.lt]],
-            },
-          };
-        }
-      }
-
-      if (last) {
-        order[0][1] = 'ASC';
-      }
-
       const messages = await models.Message.findAll({
         where,
         order,
-        limit: limit + 1,
+        limit: limit + 1, // Fetch one extra to check for hasNextPage
       });
 
-      const edges = messages?.map(message => ({
+      const edges = messages.map(message => ({
         cursor: toCursorHash(message.createdAt.toString()),
         node: message,
       }));
 
       let hasNextPage = false;
-      let hasPreviousPage = false;
 
       if (messages.length > limit) {
-        if (last) {
-          // If using last, remove the extra message from the beginning
-          edges.shift();
-        } else {
-          // If using first, remove the extra message from the end
-          edges.pop();
-        }
+        // If there are more items than the 'limit', there is a next page
         hasNextPage = true;
+        edges.pop(); // Remove the extra item fetched to check hasNextPage
       }
-
-      if (after && messages.length > 0) {
-        hasPreviousPage = true;
-      }
-
-      const totalCount = await models.Message.count();
-
-      const startCursor = edges?.length > 0 ? edges[0]?.cursor : null;
-      const endCursor =
-        edges?.length > 0 ? edges[edges?.length - 1]?.cursor : null;
 
       return {
-        totalCount,
+        totalCount: await models.Message.count(),
         edges,
         pageInfo: {
-          startCursor,
-          endCursor,
+          startCursor: edges.length > 0 ? edges[0].cursor : null,
+          endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null,
           hasNextPage,
-          hasPreviousPage,
         },
       };
     },
-
-    // async messages(_, { after, before, first, last }, { models }) {
-    //   if (Number.isFinite(first) && Number.isFinite(last)) {
-    //     throw new GraphQLError(
-    //       'Cannot use both first and last, discouraged by spec!',
-    //       {
-    //         extensions: { code: ApolloServerErrorCode.BAD_REQUEST },
-    //       }
-    //     );
-    //   }
-
-    //   if (Number.isFinite(first) && (first as number) < 0) {
-    //     throw new GraphQLError('first must be a non-negative integer.');
-    //   }
-
-    //   if (Number.isFinite(last) && (last as number) < 0) {
-    //     throw new GraphQLError('first must be a non-negative integer.');
-    //   }
-
-    //   let where = {};
-    //   const order: Order = [['createdAt', 'DESC']];
-    //   let limit = first || last || DEFAULT_PAGE_SIZE;
-
-    //   if (after) {
-    //     const afterCursor = fromCursorHash(after);
-
-    //     where = {
-    //       createdAt: {
-    //         [Op.lt]: afterCursor,
-    //       },
-    //     };
-    //   }
-
-    //   if (before) {
-    //     const beforeCursor = fromCursorHash(before);
-    //     where = {
-    //       createdAt: {
-    //         [Op.gt]: beforeCursor,
-    //       },
-    //     };
-    //   }
-
-    //   if (last) {
-    //     order[0][1] = 'ASC';
-    //     limit = last;
-    //   }
-
-    //   const messages = await models.Message.findAll({
-    //     where,
-    //     order,
-    //     limit: limit + 1,
-    //   });
-
-    //   const edges = messages?.map(message => ({
-    //     cursor: toCursorHash(message.createdAt.toString()),
-    //     node: message,
-    //   }));
-
-    //   let hasNextPage = false;
-    //   let hasPreviousPage = false;
-
-    //   if (messages.length > limit) {
-    //     hasNextPage = true;
-    //     edges.pop();
-    //   }
-
-    //   if (after && messages.length > 0) {
-    //     hasPreviousPage = true;
-    //   }
-
-    //   const totalCount = await models.Message.count();
-
-    //   const startCursor = edges?.length > 0 ? edges[0]?.cursor : null;
-    //   const endCursor =
-    //     edges?.length > 0 ? edges[edges?.length - 1]?.cursor : null;
-
-    //   return {
-    //     totalCount,
-    //     edges,
-    //     pageInfo: {
-    //       startCursor,
-    //       endCursor,
-    //       hasNextPage,
-    //       hasPreviousPage,
-    //     },
-    //   };
-    // },
   },
 
   Mutation: {
