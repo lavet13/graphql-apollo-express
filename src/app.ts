@@ -95,6 +95,15 @@ async function bootstrap() {
     createUsersWithMessages(new Date());
   }
 
+  const PORT = 4000;
+
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 Query endpoint ready at http://localhost:${PORT}/graphql`);
+    console.log(
+      `🚀 Subscription endpoint ready at ws://localhost:${PORT}/graphql`
+    );
+  });
+
   app.use(
     '/graphql',
     cors<cors.CorsRequest>(),
@@ -112,15 +121,6 @@ async function bootstrap() {
       },
     })
   );
-
-  const PORT = 4000;
-
-  httpServer.listen(PORT, () => {
-    console.log(`🚀 Query endpoint ready at http://localhost:${PORT}/graphql`);
-    console.log(
-      `🚀 Subscription endpoint ready at ws://localhost:${PORT}/graphql`
-    );
-  });
 
   return app;
 }
