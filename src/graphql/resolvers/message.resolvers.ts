@@ -1,4 +1,4 @@
-import { Op, Order } from 'sequelize';
+import { Op } from 'sequelize';
 
 import { Resolvers } from '../__generated/types';
 
@@ -12,6 +12,8 @@ import {
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import { GraphQLError } from 'graphql';
+
+import pubsub, { EVENTS } from '../subscription';
 
 const DEFAULT_PAGE_SIZE = 15;
 
@@ -66,7 +68,6 @@ const resolvers: Resolvers = {
         totalCount: await models.Message.count(),
         edges,
         pageInfo: {
-          startCursor: edges.length > 0 ? edges[0].cursor : null,
           endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null,
           hasNextPage,
         },
@@ -76,11 +77,17 @@ const resolvers: Resolvers = {
 
   Mutation: {
     async createMessage(_, { text, receiverId }, { me, models }) {
-      return await models.Message.create({
+      const message = await models.Message.create({
         text,
         senderId: me?.id,
         receiverId,
       });
+
+      pubsub.publish(EVENTS.MESSAGE.CREATED, {
+        messageCreated: { message },
+      });
+
+      return message;
     },
 
     async deleteMessage(_, { id }, { models }) {
@@ -115,6 +122,15 @@ const resolvers: Resolvers = {
       }
 
       return receiver;
+    },
+  },
+
+  Subscription: {
+    messageCreated: {
+      subscribe: () => ({
+        [Symbol.asyncIterator]: () =>
+          pubsub.asyncIterator(EVENTS.MESSAGE.CREATED),
+      }),
     },
   },
 };

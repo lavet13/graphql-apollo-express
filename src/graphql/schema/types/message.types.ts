@@ -11,6 +11,20 @@ export default gql`
     message(id: ID!): Message!
   }
 
+  type Subscription {
+    messageCreated: MessageCreated!
+  }
+
+  type MessageCreated {
+    message: Message!
+  }
+
+  type Mutation {
+    createMessage(text: String!, receiverId: ID!): Message!
+    deleteMessage(id: ID!): Boolean!
+    updateMessage(id: ID!, text: String!): [Int!]
+  }
+
   type MessageConnection {
     totalCount: Int!
     edges: [MessageEdge!]!
@@ -23,15 +37,8 @@ export default gql`
   }
 
   type PageInfo {
-    startCursor: String
     endCursor: String
     hasNextPage: Boolean!
-  }
-
-  type Mutation {
-    createMessage(text: String!, receiverId: ID!): Message!
-    deleteMessage(id: ID!): Boolean!
-    updateMessage(id: ID!, text: String!): [Int!]
   }
 
   type Message {

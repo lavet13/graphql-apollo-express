@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express, { Request } from 'express';
 import cors from 'cors';
-import { json } from 'body-parser';
+import bodyParser from 'body-parser';
 import http from 'http';
 
 import { ApolloServer } from '@apollo/server';
@@ -14,6 +14,8 @@ import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schema';
 
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
@@ -35,9 +37,38 @@ async function bootstrap() {
 
   const httpServer = http.createServer(app);
 
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/graphql',
+  });
+
+  const serverCleanup = useServer(
+    {
+      schema,
+      // async context(ctx, msg, args) {
+      async context() {
+        return { models };
+      },
+    },
+    wsServer
+  );
+
   const server = new ApolloServer<ContextValue>({
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      // Proper shutdown for the WebSocket server.
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
     formatError(formattedError, _) {
       if (formattedError.message.startsWith('Validation error:')) {
         return {
@@ -65,9 +96,9 @@ async function bootstrap() {
   }
 
   app.use(
-    '/',
+    '/graphql',
     cors<cors.CorsRequest>(),
-    json(),
+    bodyParser.json(),
     expressMiddleware<ContextValue>(server, {
       context: async ({ req }) => {
         const me = getMe(req);
@@ -82,12 +113,14 @@ async function bootstrap() {
     })
   );
 
-  if (import.meta.env.PROD) {
-    // Modified server startup
-    httpServer.listen(
-      Number.parseInt(import.meta.env.VITE_SERVER_PORT) || 4000
+  const PORT = 4000;
+
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 Query endpoint ready at http://localhost:${PORT}/graphql`);
+    console.log(
+      `🚀 Subscription endpoint ready at ws://localhost:${PORT}/graphql`
     );
-  }
+  });
 
   return app;
 }
