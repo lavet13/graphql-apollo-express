@@ -87,7 +87,7 @@ async function bootstrap() {
 
   await server.start();
 
-  const eraseDatabaseOnSync = true;
+  const eraseDatabaseOnSync = import.meta.env.DEV;
 
   await sequelize.sync({ force: eraseDatabaseOnSync });
 
@@ -99,6 +99,7 @@ async function bootstrap() {
 
   httpServer.listen(PORT, () => {
     console.log(`🚀 Query endpoint ready at http://localhost:${PORT}/graphql`);
+
     console.log(
       `🚀 Subscription endpoint ready at ws://localhost:${PORT}/graphql`
     );
