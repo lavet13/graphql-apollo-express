@@ -7,7 +7,7 @@
     "start": "vite",
     "build": "vite build",
     "clean": "rm -rf ./dist",
-    "serve": "node --experimental-specifier-resolution=node  dist/app.js"
+    "serve": "node dist/app.js"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
@@ -37,7 +37,6 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cls-hooked": "^4.2.2",
-    "common-es": "^1.0.1",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",

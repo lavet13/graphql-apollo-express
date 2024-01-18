@@ -36,9 +36,4 @@ export default defineConfig({
     }),
     dynamicImport(),
   ],
-  resolve: {
-    alias: {
-      types: path.join(__dirname, './src/graphql/schema/types'),
-    },
-  },
 });
