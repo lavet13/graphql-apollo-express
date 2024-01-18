@@ -26,6 +26,7 @@ export interface ContextValue {
   secret: string;
   expiresIn: string;
 }
+console.log({ typeDefs });
 
 const schema = makeExecutableSchema({
   typeDefs,
