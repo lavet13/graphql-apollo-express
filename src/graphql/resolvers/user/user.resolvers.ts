@@ -1,18 +1,21 @@
-import { Resolvers } from '../__generated/types';
+import { Resolvers } from '../../__generated/types';
 
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
-import dateScalars from '../scalars/date.scalars';
+import dateScalars from '../../scalars/date.scalars';
 import jwt from 'jsonwebtoken';
-import User from '../../db/models/user.models';
-import { MappedRoleModel } from '../..';
+import User from '../../../db/models/user.models';
+import { MappedRoleModel } from '../../..';
 
 import {
   composeResolvers,
   ResolversComposerMapping,
 } from '@graphql-tools/resolvers-composition';
-import { isAdmin, isAuthenticated } from './authorization';
+import {
+  isAdmin,
+  isAuthenticated,
+} from '../../composition/authorization/authorization';
 
 const createToken = async (user: User, secret: string, expiresIn: string) => {
   const { id, email, username } = user;

@@ -5,9 +5,9 @@ import { ResolversComposition } from '@graphql-tools/resolvers-composition';
 import {
   MutationDeleteMessageArgs,
   ResolversParentTypes,
-} from '../__generated/types';
+} from '../../__generated/types';
 
-import { ContextValue } from '../../app';
+import { ContextValue } from '../../../app';
 
 type AuthenticatedResolver = GraphQLFieldResolver<
   ResolversParentTypes['Mutation'],

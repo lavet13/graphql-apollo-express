@@ -1,4 +1,4 @@
-import { Resolvers } from '../__generated/types';
+import { Resolvers } from '../../__generated/types';
 
 const resolvers: Resolvers = {
   Query: {

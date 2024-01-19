@@ -1,8 +1,11 @@
 import { Op } from 'sequelize';
 
-import { Resolvers } from '../__generated/types';
+import { Resolvers } from '../../__generated/types';
 
-import { isAuthenticated, isMessageOwner } from './authorization';
+import {
+  isAuthenticated,
+  isMessageOwner,
+} from '../../composition/authorization/authorization';
 
 import {
   composeResolvers,
@@ -13,7 +16,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import { GraphQLError } from 'graphql';
 
-import pubsub, { EVENTS } from '../subscription';
+import pubsub, { EVENTS } from '../../subscription';
 
 const DEFAULT_PAGE_SIZE = 15;
 
