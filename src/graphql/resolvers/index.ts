@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // console.log({ __filename, __dirname });
 
-const folderPath = path.join(process.cwd(), '/src/graphql/schema');
+const folderPath = path.join(process.cwd(), '/src/graphql/resolvers');
 
 const loadedResolvers = await loadFiles(`${folderPath}/**/*.resolvers.*`, {
   ignoreIndex: true,
@@ -22,7 +22,7 @@ const loadedResolvers = await loadFiles(`${folderPath}/**/*.resolvers.*`, {
 
     // console.log({ relativePath, folderName, folderPath, fullPath });
 
-    return await import(`./${folderPath}/${name}`);
+    return await import(`./${folderName}/${name}`);
   },
 });
 
